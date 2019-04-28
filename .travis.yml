@@ -1,0 +1,9 @@
+language: csharp
+solution: SimpleRpc.sln
+mono: none
+dotnet: 2.1.502
+script:
+ - dotnet restore
+branches:
+  only:
+  - master
