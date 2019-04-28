@@ -1,0 +1,6 @@
+{
+  "RpcServer": {
+    "Port": 12003,
+    "EnableServiceDiscovery": false
+  }
+}
