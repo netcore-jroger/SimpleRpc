@@ -1,0 +1,21 @@
+version: '0.1.{build}'
+image: Visual Studio 2017
+branches:
+  only:
+  - master
+init:
+  - cmd: git config --global core.autocrlf true
+install:
+
+before_build:
+  - cmd: dotnet --version
+  - cmd: dotnet restore ./SimpleRpc.sln --verbosify m
+
+build_script:
+  - cmd: dotnet publish ./SimpleRpc.sln
+
+after_build:
+
+on_finish:
+
+deploy: off
