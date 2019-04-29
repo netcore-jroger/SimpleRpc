@@ -9,7 +9,7 @@ install:
 
 before_build:
   - cmd: dotnet --version
-  - cmd: dotnet restore ./SimpleRpc.sln --verbosify m
+  - cmd: dotnet restore ./SimpleRpc.sln --verbosity m
 
 build_script:
   - cmd: dotnet publish ./SimpleRpc.sln
