@@ -1,3 +1,6 @@
+os:
+- linux
+- windows
 language: csharp
 solution: SimpleRpc.sln
 mono: none
