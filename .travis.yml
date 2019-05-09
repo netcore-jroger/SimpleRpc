@@ -7,6 +7,7 @@ mono: none
 dotnet: 2.1.502
 script:
  - dotnet restore
+ - dotnet build ./SimpleRpc.sln -c Release --force
 branches:
   only:
   - master
