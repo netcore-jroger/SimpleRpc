@@ -23,8 +23,6 @@ on_finish:
 
 nuget:
   disable_publish_on_pr: true
-  on:
-    APPVEYOR_REPO_TAG: true
 
 for:
 -
