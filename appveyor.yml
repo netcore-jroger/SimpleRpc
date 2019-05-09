@@ -14,6 +14,7 @@ before_build:
   - cmd: dotnet restore ./SimpleRpc.sln --verbosity m
 
 build_script:
+  - cmd: dotnet build ./SimpleRpc.sln -c Release --force
   - cmd: dotnet publish ./SimpleRpc.sln -c Release
 
 after_build:
