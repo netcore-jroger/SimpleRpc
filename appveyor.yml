@@ -1,5 +1,7 @@
 version: '0.1.{build}'
-image: Visual Studio 2017
+image:
+  - Visual Studio 2017
+  - Ubuntu
 configuration: Release
 branches:
   only:
@@ -19,12 +21,22 @@ after_build:
 
 on_finish:
 
-deploy:
-  provider: NuGet
-  name: production
-  api_key:
-    secure: ceJi177DdM8KLdPZg4UjO4X6sigL2blN3O2gaRbJpD7XiJGuhMIjEjLIf6C2mB0E
-  skip_symbols: true
-  artifact: /.*\.nupkg/
-  on:
-    branch: master
+nuget:
+  disable_publish_on_pr: true
+
+for:
+-
+  matrix:
+    only:
+      - image: Ubuntu
+
+  deploy:
+  - provider: NuGet
+    name: production
+    api_key:
+      secure: ceJi177DdM8KLdPZg4UjO4X6sigL2blN3O2gaRbJpD7XiJGuhMIjEjLIf6C2mB0E
+    skip_symbols: true
+    artifact: /.*\.nupkg/
+    on:
+      branch: master
+      appveyor_repo_tag: true
