@@ -7,6 +7,10 @@ branches:
   - master
 init:
   - cmd: git config --global core.autocrlf true
+
+environment:
+  appveyor_repo_tag: true
+
 install:
 
 before_build:
