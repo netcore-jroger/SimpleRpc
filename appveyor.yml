@@ -25,6 +25,10 @@ after_build:
 
 on_finish:
 
+artifacts:
+  - path: .\**\*.nupkg
+    name: NuGet
+
 nuget:
   disable_publish_on_pr: true
   project_feed: true
@@ -38,9 +42,4 @@ deploy:
   artifact: /.*\.nupkg/
   on:
     branch: master
-    appveyor_repo_tag: true
-  
-- provider: Environment
-  name: production
-  on:
     appveyor_repo_tag: true
