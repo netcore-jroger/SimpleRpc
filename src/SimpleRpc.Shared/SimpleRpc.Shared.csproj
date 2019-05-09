@@ -3,6 +3,13 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>7.1</LangVersion>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageTags>gRPC</PackageTags>
+    <PackageProjectUrl>https://github.com/netcore-jroger/SimpleRpc</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/netcore-jroger/SimpleRpc</RepositoryUrl>
+    <Version>0.1.6</Version>
+    <Description>A light-weight RPC wrap of google gRPC framework.</Description>
+    <Copyright>© JRoger 2019</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
