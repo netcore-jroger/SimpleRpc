@@ -40,3 +40,8 @@ for:
     on:
       branch: master
       APPVEYOR_REPO_TAG: true
+    
+  - provider: Environment
+    name: production
+    on:
+      APPVEYOR_REPO_TAG: true
