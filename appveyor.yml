@@ -1,7 +1,6 @@
 version: '0.1.{build}'
 image:
   - Visual Studio 2017
-  - Ubuntu
 configuration: Release
 branches:
   only:
@@ -24,24 +23,18 @@ on_finish:
 nuget:
   disable_publish_on_pr: true
 
-for:
--
-  matrix:
-    only:
-      - image: Ubuntu
-
-  deploy:
-  - provider: NuGet
-    name: production
-    api_key:
-      secure: ceJi177DdM8KLdPZg4UjO4X6sigL2blN3O2gaRbJpD7XiJGuhMIjEjLIf6C2mB0E
-    skip_symbols: true
-    artifact: /.*\.nupkg/
-    on:
-      branch: master
-      APPVEYOR_REPO_TAG: true
-    
-  - provider: Environment
-    name: production
-    on:
-      APPVEYOR_REPO_TAG: true
+deploy:
+- provider: NuGet
+  name: production
+  api_key:
+    secure: ceJi177DdM8KLdPZg4UjO4X6sigL2blN3O2gaRbJpD7XiJGuhMIjEjLIf6C2mB0E
+  skip_symbols: true
+  artifact: /.*\.nupkg/
+  on:
+    branch: master
+    APPVEYOR_REPO_TAG: true
+  
+- provider: Environment
+  name: production
+  on:
+    APPVEYOR_REPO_TAG: true
