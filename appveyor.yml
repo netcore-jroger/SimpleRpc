@@ -1,5 +1,6 @@
 version: '0.1.{build}'
 image: Visual Studio 2017
+configuration: Release
 branches:
   only:
   - master
@@ -12,7 +13,7 @@ before_build:
   - cmd: dotnet restore ./SimpleRpc.sln --verbosity m
 
 build_script:
-  - cmd: dotnet publish ./SimpleRpc.sln
+  - cmd: dotnet publish ./SimpleRpc.sln -c Release
 
 after_build:
 
