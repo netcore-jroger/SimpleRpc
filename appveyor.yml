@@ -34,9 +34,9 @@ deploy:
   artifact: /.*\.nupkg/
   on:
     branch: master
-    APPVEYOR_REPO_TAG: true
+    appveyor_repo_tag: true
   
 - provider: Environment
   name: production
   on:
-    APPVEYOR_REPO_TAG: true
+    appveyor_repo_tag: true
