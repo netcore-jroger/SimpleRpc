@@ -1,6 +1,6 @@
 version: '0.1.{build}'
 image:
-  - Visual Studio 2017
+  - Visual Studio 2019
 configuration: Release
 branches:
   only:
