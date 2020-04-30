@@ -13,8 +13,12 @@ namespace SimpleRpc.Server.Internal
 {
     internal static class GrpcHostBuilderExtensions
     {
-        private static readonly MethodInfo _handlerGenerator = typeof(MethodHandlerGenerator).GetMethod(nameof(MethodHandlerGenerator.GenerateUnaryMethodHandler));
+        //Unary
+        private static readonly MethodInfo _unaryHandlerGenerator = typeof(MethodHandlerGenerator).GetMethod(nameof(MethodHandlerGenerator.GenerateUnaryMethodHandler));
         private static readonly MethodInfo _addUnaryMethod = typeof(GrpcHostBuilder).GetMethod(nameof(GrpcHostBuilder.AddUnaryMethod), BindingFlags.Public | BindingFlags.Instance);
+
+        // ClientStreaming
+        private static readonly MethodInfo _clientStreamingHandlerGenerator = typeof(MethodHandlerGenerator).GetMethod(nameof(MethodHandlerGenerator.GenerateClientStreamingMethodHandler));
         private static readonly MethodInfo _addClientStreamingMethod = typeof(GrpcHostBuilder).GetMethod(nameof(GrpcHostBuilder.AddClientStreamingMethod), BindingFlags.Public | BindingFlags.Instance);
 
         public static IRpcHostBuilder RegisterRpcService(this IRpcHostBuilder builder, List<RpcServiceDescription> rpcServiceDescriptions)
@@ -31,7 +35,7 @@ namespace SimpleRpc.Server.Internal
                     switch (rpcMethodDescription.RpcMethodType)
                     {
                         case MethodType.Unary:
-                            var unaryHandlerGenerator = _handlerGenerator.MakeGenericMethod(rpcServiceDescription.RpcServiceType, requestType, responseType);
+                            var unaryHandlerGenerator = _unaryHandlerGenerator.MakeGenericMethod(rpcServiceDescription.RpcServiceType, requestType, responseType);
                             var unaryHandler = unaryHandlerGenerator.Invoke(null, new[] { rpcMethodDescription.RpcMethod });
 
                             var addUnaryMethod = _addUnaryMethod.MakeGenericMethod(rpcServiceDescription.RpcServiceType, requestType, responseType);
@@ -39,7 +43,7 @@ namespace SimpleRpc.Server.Internal
                             break;
 
                         case MethodType.ClientStreaming:
-                            var clientStreamingHandlerGenerator = _handlerGenerator.MakeGenericMethod(rpcServiceDescription.RpcServiceType, requestType, responseType);
+                            var clientStreamingHandlerGenerator = _clientStreamingHandlerGenerator.MakeGenericMethod(rpcServiceDescription.RpcServiceType, requestType, responseType);
                             var clientStreamingHandler = clientStreamingHandlerGenerator.Invoke(null, new[] { rpcMethodDescription.RpcMethod });
 
                             var addClientStreamingMethod = _addClientStreamingMethod.MakeGenericMethod(rpcServiceDescription.RpcServiceType, requestType, responseType);
@@ -64,7 +68,7 @@ namespace SimpleRpc.Server.Internal
                 var requestType = method.GetParameters()[0].ParameterType;
                 var responseType = method.ReturnType.GenericTypeArguments[0];
 
-                var handlerGenerator = _handlerGenerator.MakeGenericMethod(serviceType, requestType, responseType);
+                var handlerGenerator = _unaryHandlerGenerator.MakeGenericMethod(serviceType, requestType, responseType);
                 var handler = handlerGenerator.Invoke(null, new[] { method });
 
                 var methodName = GetMethodName(method);
@@ -87,7 +91,7 @@ namespace SimpleRpc.Server.Internal
                 var requestType = method.GetParameters()[0].ParameterType;
                 var responseType = method.ReturnType.GenericTypeArguments[0];
 
-                var handlerGenerator = _handlerGenerator.MakeGenericMethod(serviceType, requestType, responseType);
+                var handlerGenerator = _unaryHandlerGenerator.MakeGenericMethod(serviceType, requestType, responseType);
                 var handler = handlerGenerator.Invoke(null, new[] { method });
 
                 var methodName = GetMethodName(method);

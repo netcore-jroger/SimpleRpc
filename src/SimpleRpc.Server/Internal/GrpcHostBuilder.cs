@@ -29,7 +29,7 @@ namespace SimpleRpc.Server.Internal
             this._options = options.Value;
         }
 
-        public IRpcHostBuilder AddUnaryMethod<TService, TRequest, TResponse>(
+        public IRpcHostBuilder AddUnaryMethod<TService, TRequest, TResponse> (
             Func<TService, TRequest, CancellationToken, Task<TResponse>> handler,
             string serviceName,
             string methodName
@@ -56,8 +56,8 @@ namespace SimpleRpc.Server.Internal
             return this;
         }
 
-        public IRpcHostBuilder AddClientStreamingMethod<TService, TRequest, TResponse>(
-            Func<TService, TRequest, CancellationToken, Task<TResponse>> handler,
+        public IRpcHostBuilder AddClientStreamingMethod<TService, TRequest, TResponse> (
+            Func<TService, IAsyncStreamReader<TRequest>, CancellationToken, Task<TResponse>> handler,
             string serviceName,
             string methodName
         )
@@ -65,17 +65,20 @@ namespace SimpleRpc.Server.Internal
             where TRequest : class
             where TResponse : class
         {
+            var method = MethodDefinitionGenerator.CreateMethodDefinition<TRequest, TResponse>(MethodType.ClientStreaming, serviceName, methodName, this._serializer);
+
             this._builder.AddMethod(
-                MethodDefinitionGenerator.CreateMethodDefinition<TRequest, TResponse>(MethodType.ClientStreaming, serviceName, methodName, this._serializer),
-                (request, context) => {
+                method,
+                (requestStream, context) => {
                     using (var scope = this._serviceProvider.CreateScope())
                     {
                         var service = scope.ServiceProvider.GetServices<TService>().First(s => !s.GetType().Name.EndsWith("GrpcClientProxy", StringComparison.OrdinalIgnoreCase));
-                        if (service is RpcServiceBase baseService)
+                        if (service is RpcServiceBaseServer<TRequest> baseService)
                         {
                             baseService.Context = context;
+                            baseService.RequestStream = requestStream;
                         }
-                        return handler(service, request, context.CancellationToken);
+                        return handler(service, requestStream, context.CancellationToken);
                     }
                 }
             );

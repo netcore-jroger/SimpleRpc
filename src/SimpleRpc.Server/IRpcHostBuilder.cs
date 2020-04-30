@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Grpc.Core;
 using SimpleRpc.Shared;
 
 namespace SimpleRpc.Server
@@ -27,7 +28,7 @@ namespace SimpleRpc.Server
             where TResponse : class;
 
         /// <summary>
-        /// 添加 ClientStreaming RPC 方法
+        /// 添加 ClientStreamingMethod RPC 方法
         /// </summary>
         /// <param name="handler"></param>
         /// <param name="serviceName"></param>
@@ -37,7 +38,7 @@ namespace SimpleRpc.Server
         /// <typeparam name="TResponse"></typeparam>
         /// <returns></returns>
         IRpcHostBuilder AddClientStreamingMethod<TService, TRequest, TResponse>(
-            Func<TService, TRequest, CancellationToken, Task<TResponse>> handler,
+            Func<TService, IAsyncStreamReader<TRequest>, CancellationToken, Task<TResponse>> handler,
             string serviceName,
             string methodName
         )

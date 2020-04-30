@@ -1,4 +1,5 @@
-﻿using ProtoBuf;
+﻿using Grpc.Core;
+using ProtoBuf;
 using SimpleRpc.Shared;
 using SimpleRpc.Shared.ServiceAnnotations;
 using System;
@@ -13,8 +14,8 @@ namespace InterfaceLib
         [RpcMethod]
         Task<UserDTO> GetUserBy(UserRequest request, CancellationToken token = default);
 
-        [RpcMethod(MethodType = Grpc.Core.MethodType.ClientStreaming)]
-        Task<UserDTO> TestClientStreaming(UserRequest request, CancellationToken token = default);
+        [RpcMethod(MethodType = MethodType.ClientStreaming)]
+        Task<UserDTO> TestClientStreaming(IAsyncStreamReader<UserRequest> requestStream, CancellationToken token = default);
     }
 
     [ProtoContract]

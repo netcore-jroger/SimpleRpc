@@ -2,13 +2,14 @@
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Grpc.Core;
 using InterfaceLib;
 using Microsoft.Extensions.Logging;
 using SimpleRpc.Server;
 
 namespace ServerSample
 {
-    public class UserService : RpcServiceBase, IUserService
+    public class UserService : RpcServiceBaseServer<UserRequest>, IUserService
     {
         private readonly ILogger<UserService> _logger;
 
@@ -29,16 +30,18 @@ namespace ServerSample
             });
         }
 
-        public Task<UserDTO> TestClientStreaming(UserRequest request, CancellationToken token = default)
+        public async Task<UserDTO> TestClientStreaming(IAsyncStreamReader<UserRequest> requestStream, CancellationToken token = default)
         {
-            this._logger.LogInformation($"Receive client message：{JsonSerializer.Serialize(request)}");
+            while(await requestStream.MoveNext(token))
+            {
+                this._logger.LogInformation($"Receive client message：{JsonSerializer.Serialize(requestStream.Current)}");
+            }
 
-            
-            return Task.FromResult(new UserDTO {
+            return new UserDTO {
                 Id = (int)DateTime.Now.Ticks / 10000,
-                Name = Guid.NewGuid().ToString("D") + request.Keyword,
+                Name = Guid.NewGuid().ToString("D"),
                 CreateDate = DateTime.Now
-            });
+            };
         }
     }
 }
