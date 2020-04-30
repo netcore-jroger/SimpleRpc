@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using SimpleRpc.Server.Description;
 using SimpleRpc.Shared;
+using SimpleRpc.Shared.Description;
 
 namespace SimpleRpc.Server
 {

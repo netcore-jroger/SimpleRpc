@@ -5,8 +5,8 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Grpc.Core;
-using SimpleRpc.Server.Description;
 using SimpleRpc.Shared;
+using SimpleRpc.Shared.Description;
 using SimpleRpc.Shared.ServiceAnnotations;
 
 namespace SimpleRpc.Server.Internal

@@ -1,10 +1,9 @@
 ﻿using System.Reflection;
 using System.Threading;
 using Grpc.Core;
-using SimpleRpc.Shared;
 using SimpleRpc.Shared.ServiceAnnotations;
 
-namespace SimpleRpc.Server.Description
+namespace SimpleRpc.Shared.Description
 {
     public sealed class RpcMethodDescription
     {

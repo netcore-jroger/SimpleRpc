@@ -9,7 +9,7 @@ using Microsoft.Extensions.Hosting;
 using InterfaceLib;
 using SimpleRpc.Server;
 using SimpleRpc.Shared;
-using SimpleRpc.Server.Description;
+using SimpleRpc.Shared.Description;
 
 namespace ServerSample
 {

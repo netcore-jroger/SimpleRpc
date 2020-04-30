@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using SimpleRpc.Shared.ServiceAnnotations;
 
-namespace SimpleRpc.Server.Description
+namespace SimpleRpc.Shared.Description
 {
     public sealed class RpcServiceDescription
     {
