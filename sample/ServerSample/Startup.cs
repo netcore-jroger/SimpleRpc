@@ -9,6 +9,7 @@ using Microsoft.Extensions.Hosting;
 using InterfaceLib;
 using SimpleRpc.Server;
 using SimpleRpc.Shared;
+using SimpleRpc.Server.Description;
 
 namespace ServerSample
 {
@@ -46,6 +47,11 @@ namespace ServerSample
             return new List<Type> {
                 typeof(IUserService)
             };
+        }
+
+        public List<RpcServiceDescription> GetAllRpcServiceDescription()
+        {
+            throw new NotImplementedException();
         }
     }
 }

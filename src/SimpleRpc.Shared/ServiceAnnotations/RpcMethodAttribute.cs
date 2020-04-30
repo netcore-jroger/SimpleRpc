@@ -1,4 +1,5 @@
 ﻿using System;
+using Grpc.Core;
 
 namespace SimpleRpc.Shared.ServiceAnnotations
 {
@@ -7,9 +8,12 @@ namespace SimpleRpc.Shared.ServiceAnnotations
     {
         public string Name { get; set; }
 
+        public MethodType MethodType { get; set; }
+
         public RpcMethodAttribute(string name = "")
         {
             this.Name = name;
+            this.MethodType = MethodType.Unary;
         }
     }
 }

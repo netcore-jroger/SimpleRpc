@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using SimpleRpc.Server.Description;
 using SimpleRpc.Shared;
 
 namespace SimpleRpc.Server
@@ -9,6 +10,8 @@ namespace SimpleRpc.Server
     public interface IRpcServiceTypeFinder
     {
         List<Type> FindAllRpcServiceType();
+
+        List<RpcServiceDescription> GetAllRpcServiceDescription();
     }
 
     public class DefaultRpcServiceTypeFinder : IRpcServiceTypeFinder
@@ -19,12 +22,15 @@ namespace SimpleRpc.Server
         {
             var typeOfRpc = typeof(IRpcService);
             var rpcTypes = AppDomain.CurrentDomain.GetAssemblies()
-                .Where(a => !_ignoreNamespaceRegex.IsMatch(a.GetName().Name))
+                .Where(a => !_ignoreNamespaceRegex.IsMatch(a.GetName().Name) && !a.IsDynamic)
                 .SelectMany(a => a.GetExportedTypes())
                 .Where(t => t.IsInterface && typeOfRpc.IsAssignableFrom(t))
                 .ToList();
 
             return rpcTypes;
         }
+
+        public List<RpcServiceDescription> GetAllRpcServiceDescription()
+            => this.FindAllRpcServiceType().Select(_ => new RpcServiceDescription(_)).ToList();
     }
 }

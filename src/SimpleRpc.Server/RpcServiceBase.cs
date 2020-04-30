@@ -5,6 +5,6 @@ namespace SimpleRpc.Server
 {
     public abstract class RpcServiceBase : IRpcService
     {
-        public ServerCallContext Context { get; set; }
+        public ServerCallContext Context { get; internal set; }
     }
 }

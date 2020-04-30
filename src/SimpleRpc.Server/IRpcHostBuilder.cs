@@ -8,7 +8,7 @@ namespace SimpleRpc.Server
     public interface IRpcHostBuilder
     {
         /// <summary>
-        /// 添加 RPC 方法
+        /// 添加 UnaryMethod RPC 方法
         /// </summary>
         /// <param name="handler"></param>
         /// <param name="serviceName"></param>
@@ -18,6 +18,25 @@ namespace SimpleRpc.Server
         /// <typeparam name="TResponse"></typeparam>
         /// <returns></returns>
         IRpcHostBuilder AddUnaryMethod<TService, TRequest, TResponse>(
+            Func<TService, TRequest, CancellationToken, Task<TResponse>> handler,
+            string serviceName,
+            string methodName
+        )
+            where TService : class, IRpcService
+            where TRequest : class
+            where TResponse : class;
+
+        /// <summary>
+        /// 添加 ClientStreaming RPC 方法
+        /// </summary>
+        /// <param name="handler"></param>
+        /// <param name="serviceName"></param>
+        /// <param name="methodName"></param>
+        /// <typeparam name="TService"></typeparam>
+        /// <typeparam name="TRequest"></typeparam>
+        /// <typeparam name="TResponse"></typeparam>
+        /// <returns></returns>
+        IRpcHostBuilder AddClientStreamingMethod<TService, TRequest, TResponse>(
             Func<TService, TRequest, CancellationToken, Task<TResponse>> handler,
             string serviceName,
             string methodName

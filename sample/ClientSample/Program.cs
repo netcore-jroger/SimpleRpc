@@ -20,19 +20,31 @@ namespace ClientSample
                 .AddRpcClientService<IUserService>()
                 .BuildServiceProvider();
 
-                var userRequest = new UserRequest {
-                    Id = 1
-                };
+            var userRequest = new UserRequest {
+                Id = 1
+            };
 
-                while (true)
+            while (true)
+            {
+                Console.Write("Please input keyword:");
+                var input = Console.ReadLine();
+                if (input.Equals("Q", StringComparison.OrdinalIgnoreCase))
                 {
-                    Console.Write("Please input keyword:");
-                    var input = Console.ReadLine();
-                    if (input.Equals("Q", StringComparison.OrdinalIgnoreCase))
-                    {
-                        break;
-                    }
+                    break;
+                }
 
+                if (input.StartsWith("cs:", StringComparison.OrdinalIgnoreCase))
+                {
+                    userRequest.Keyword = input;
+                    var tokenSource = new CancellationTokenSource(1000 * 10);
+                    var userService = provider.GetService<IUserService>();
+
+                    var userDto = await userService.TestClientStreaming(userRequest, tokenSource.Token);
+
+                    Console.WriteLine($"Id: {userDto.Id}, Name: {userDto.Name}, CreateDate: {userDto.CreateDate:yyyy-MM-dd HH:mm:ss fff}");
+                }
+                else
+                {
                     userRequest.Keyword = input;
                     var tokenSource = new CancellationTokenSource(1000 * 10);
                     var userService = provider.GetService<IUserService>();
@@ -40,6 +52,7 @@ namespace ClientSample
 
                     Console.WriteLine($"Id: {userDto.Id}, Name: {userDto.Name}, CreateDate: {userDto.CreateDate:yyyy-MM-dd HH:mm:ss fff}");
                 }
+            }
 
             Console.WriteLine("press any key to exit.");
             Console.ReadKey(true);
