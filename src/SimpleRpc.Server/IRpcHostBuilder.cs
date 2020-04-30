@@ -38,7 +38,7 @@ namespace SimpleRpc.Server
         /// <typeparam name="TResponse"></typeparam>
         /// <returns></returns>
         IRpcHostBuilder AddClientStreamingMethod<TService, TRequest, TResponse>(
-            Func<TService, IAsyncStreamReader<TRequest>, CancellationToken, Task<TResponse>> handler,
+            Func<TService, CancellationToken, Task<TResponse>> handler,
             string serviceName,
             string methodName
         )

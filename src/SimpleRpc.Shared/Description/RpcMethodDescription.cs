@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using System.Threading;
 using Grpc.Core;
 using SimpleRpc.Shared.ServiceAnnotations;
@@ -9,12 +10,13 @@ namespace SimpleRpc.Shared.Description
     {
         public RpcMethodDescription(MethodInfo methodInfo)
         {
-            CheckRpcMethodParameterType(methodInfo);
-
+            var (rpcMethodName, methodType, requestDataType) = GetRpcMethodInfo(methodInfo);
             this.RpcMethod = methodInfo;
-            var (rpcMethodName, methodType) = GetRpcMethodInfo(methodInfo);
             this.RpcMethodName = rpcMethodName;
             this.RpcMethodType = methodType;
+            this.RequestDataType = requestDataType;
+
+            this.CheckRpcMethodParameterType(methodInfo);
         }
 
         public MethodInfo RpcMethod { get; }
@@ -23,29 +25,32 @@ namespace SimpleRpc.Shared.Description
 
         public MethodType RpcMethodType { get; }
 
-        private static (string rpcMethodName, MethodType methodType) GetRpcMethodInfo(MethodInfo methodInfo)
+        public Type RequestDataType { get; }
+
+        private static (string rpcMethodName, MethodType methodType, Type requestDataType) GetRpcMethodInfo(MethodInfo methodInfo)
         {
             var attr = methodInfo.GetCustomAttribute(typeof(RpcMethodAttribute), true) as RpcMethodAttribute;
 
             return (
                 string.IsNullOrWhiteSpace(attr.Name) ? methodInfo.Name : attr.Name,
-                attr.MethodType
+                attr.MethodType,
+                attr.RequestDataType
             );
         }
 
-        private static void CheckRpcMethodParameterType(MethodInfo method)
+        private void CheckRpcMethodParameterType(MethodInfo method)
         {
             if (method.ReturnType.GenericTypeArguments.Length != 1)
             {
                 throw new RpcDefineException("The return value type of RPC method must be Task<T>.");
             }
 
-            if (method.GetParameters().Length != 2)
+            if (this.RpcMethodType == MethodType.Unary && method.GetParameters().Length != 2)
             {
                 throw new RpcDefineException("The RPC method can only contain two parameters, the first one is the generic TRequest and the other is the System.Threading.CancellationToken type.");
             }
 
-            if (method.GetParameters()[1].ParameterType != typeof(CancellationToken))
+            if (this.RpcMethodType == MethodType.Unary && method.GetParameters()[1].ParameterType != typeof(CancellationToken))
             {
                 throw new RpcDefineException("The second parameter of the RPC method must be the System.Threading.CancellationToken type.");
             }

@@ -3,7 +3,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Grpc.Core;
 
 namespace SimpleRpc.Server.Internal
 {
@@ -25,16 +24,14 @@ namespace SimpleRpc.Server.Internal
             return func;
         }
 
-        public static Func<TService, IAsyncStreamReader<TRequest>, CancellationToken, Task<TResponse>> GenerateClientStreamingMethodHandler<TService, TRequest, TResponse>(MethodInfo method)
-            where TRequest : class
+        public static Func<TService, CancellationToken, Task<TResponse>> GenerateClientStreamingMethodHandler<TService, TResponse>(MethodInfo method)
             where TResponse : class
         {
             var serviceParameter = Expression.Parameter(typeof(TService));
-            var requestParameter = Expression.Parameter(typeof(IAsyncStreamReader<TRequest>));
             var ctParameter = Expression.Parameter(typeof(CancellationToken));
-            var invocation = Expression.Call(serviceParameter, method, new[] { requestParameter, ctParameter });
-            var func = Expression.Lambda<Func<TService, IAsyncStreamReader<TRequest>, CancellationToken, Task<TResponse>>>(
-                invocation, false, new[] { serviceParameter, requestParameter, ctParameter }
+            var invocation = Expression.Call(serviceParameter, method, new[] { ctParameter });
+            var func = Expression.Lambda<Func<TService, CancellationToken, Task<TResponse>>>(
+                invocation, false, new[] { serviceParameter, ctParameter }
             )
             .Compile();
 

@@ -9,7 +9,7 @@ using SimpleRpc.Server;
 
 namespace ServerSample
 {
-    public class UserService : RpcServiceBaseServer<UserRequest>, IUserService
+    public class UserService : RpcServiceBase, IUserService
     {
         private readonly ILogger<UserService> _logger;
 
@@ -30,8 +30,10 @@ namespace ServerSample
             });
         }
 
-        public async Task<UserDTO> TestClientStreaming(IAsyncStreamReader<UserRequest> requestStream, CancellationToken token = default)
+        public async Task<UserDTO> TestClientStreaming(CancellationToken token = default)
         {
+            var requestStream = this.GetAsyncStreamReader<UserDTO>();
+
             while(await requestStream.MoveNext(token))
             {
                 this._logger.LogInformation($"Receive client message：{JsonSerializer.Serialize(requestStream.Current)}");

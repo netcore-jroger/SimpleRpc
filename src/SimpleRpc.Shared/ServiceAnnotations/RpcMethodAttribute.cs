@@ -10,6 +10,8 @@ namespace SimpleRpc.Shared.ServiceAnnotations
 
         public MethodType MethodType { get; set; }
 
+        public Type RequestDataType { get; set; }
+
         public RpcMethodAttribute(string name = "")
         {
             this.Name = name;

@@ -57,7 +57,7 @@ namespace SimpleRpc.Server.Internal
         }
 
         public IRpcHostBuilder AddClientStreamingMethod<TService, TRequest, TResponse> (
-            Func<TService, IAsyncStreamReader<TRequest>, CancellationToken, Task<TResponse>> handler,
+            Func<TService, CancellationToken, Task<TResponse>> handler,
             string serviceName,
             string methodName
         )
@@ -73,12 +73,12 @@ namespace SimpleRpc.Server.Internal
                     using (var scope = this._serviceProvider.CreateScope())
                     {
                         var service = scope.ServiceProvider.GetServices<TService>().First(s => !s.GetType().Name.EndsWith("GrpcClientProxy", StringComparison.OrdinalIgnoreCase));
-                        if (service is RpcServiceBaseServer<TRequest> baseService)
+                        if (service is RpcServiceBase baseService)
                         {
                             baseService.Context = context;
-                            baseService.RequestStream = requestStream;
+                            baseService.SetAsyncStreamReader(requestStream);
                         }
-                        return handler(service, requestStream, context.CancellationToken);
+                        return handler(service, context.CancellationToken);
                     }
                 }
             );

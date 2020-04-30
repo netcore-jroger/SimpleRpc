@@ -14,8 +14,8 @@ namespace InterfaceLib
         [RpcMethod]
         Task<UserDTO> GetUserBy(UserRequest request, CancellationToken token = default);
 
-        [RpcMethod(MethodType = MethodType.ClientStreaming)]
-        Task<UserDTO> TestClientStreaming(IAsyncStreamReader<UserRequest> requestStream, CancellationToken token = default);
+        [RpcMethod(MethodType = MethodType.ClientStreaming, RequestDataType = typeof(UserDTO))]
+        Task<UserDTO> TestClientStreaming(CancellationToken token = default);
     }
 
     [ProtoContract]

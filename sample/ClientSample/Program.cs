@@ -39,7 +39,7 @@ namespace ClientSample
                     var tokenSource = new CancellationTokenSource(1000 * 10);
                     var userService = provider.GetService<IUserService>();
 
-                    var userDto = await userService.TestClientStreaming(null, tokenSource.Token);
+                    var userDto = await userService.TestClientStreaming(tokenSource.Token);
 
                     Console.WriteLine($"Id: {userDto.Id}, Name: {userDto.Name}, CreateDate: {userDto.CreateDate:yyyy-MM-dd HH:mm:ss fff}");
                 }

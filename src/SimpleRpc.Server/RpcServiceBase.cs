@@ -5,16 +5,15 @@ namespace SimpleRpc.Server
 {
     public abstract class RpcServiceBase : IRpcService
     {
+        private object _requestStream;
+
         public ServerCallContext Context { get; internal set; }
-    }
 
-    public abstract class RpcServiceBaseServer<TRequest> : RpcServiceBase
-    {
+        internal void SetAsyncStreamReader<TRequest>(IAsyncStreamReader<TRequest> requestStream)
+        {
+            this._requestStream = requestStream;
+        }
 
-        //TODO: ?
-        //     private object RequestStream {get; private set;}
-        //     void SetAsyncStreamReader<TRequest>(IAsyncStreamReader<TRequest> requestStream);
-        //     IAsyncStreamReader<TRequest> GetAsyncStreamReader<TRequest>() => (IAsyncStreamReader<TRequest>)this.RequestStream;
-        public IAsyncStreamReader<TRequest> RequestStream { get; internal set; }
+        public IAsyncStreamReader<TRequest> GetAsyncStreamReader<TRequest>() => (IAsyncStreamReader<TRequest>)this._requestStream;
     }
 }

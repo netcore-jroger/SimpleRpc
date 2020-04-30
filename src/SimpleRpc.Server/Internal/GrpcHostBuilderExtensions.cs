@@ -43,10 +43,11 @@ namespace SimpleRpc.Server.Internal
                             break;
 
                         case MethodType.ClientStreaming:
-                            var clientStreamingHandlerGenerator = _clientStreamingHandlerGenerator.MakeGenericMethod(rpcServiceDescription.RpcServiceType, requestType, responseType);
+                            // Func<TService, CancellationToken, Task<TResponse>>
+                            var clientStreamingHandlerGenerator = _clientStreamingHandlerGenerator.MakeGenericMethod(rpcServiceDescription.RpcServiceType, responseType);
                             var clientStreamingHandler = clientStreamingHandlerGenerator.Invoke(null, new[] { rpcMethodDescription.RpcMethod });
 
-                            var addClientStreamingMethod = _addClientStreamingMethod.MakeGenericMethod(rpcServiceDescription.RpcServiceType, requestType, responseType);
+                            var addClientStreamingMethod = _addClientStreamingMethod.MakeGenericMethod(rpcServiceDescription.RpcServiceType, rpcMethodDescription.RequestDataType, responseType);
                             addClientStreamingMethod.Invoke(builder, new[] { clientStreamingHandler, rpcServiceDescription.RpcServiceName, rpcMethodDescription.RpcMethodName });
                             break;
                     }
