@@ -2,24 +2,26 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
+using Grpc.Core;
 using SimpleRpc.Shared.Internal;
 using SimpleRpc.Shared.Serializers;
-using GrpcCore = Grpc.Core;
 
 namespace SimpleRpc.Client
 {
     public class DefaultRpcChannel : IRpcChannel
     {
-        private readonly GrpcCore.DefaultCallInvoker _invoker;
+        private readonly DefaultCallInvoker _invoker;
         private readonly ISerializer _serializer;
+        private readonly string _host;
 
         public DefaultRpcChannel(IRpcServiceDiscovery rpcServiceDiscovery, ISerializer serializer, IOptions<RpcClientOptions> options)
         {
             var (host, port) = rpcServiceDiscovery == null
                 ? (options.Value.Host, options.Value.Port)
                 : rpcServiceDiscovery.ResolveAsync().ConfigureAwait(false).GetAwaiter().GetResult();
-            var channel = new GrpcCore.Channel(host, port, GrpcCore.ChannelCredentials.Insecure);
-            this._invoker = new GrpcCore.DefaultCallInvoker(channel);
+            var channel = new Channel(host, port, ChannelCredentials.Insecure);
+            this._host = host;
+            this._invoker = new DefaultCallInvoker(channel);
             this._serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
         }
 
@@ -27,8 +29,8 @@ namespace SimpleRpc.Client
             where TRequest : class
             where TResponse : class
         {
-            var callOptions = new GrpcCore.CallOptions(cancellationToken: token).WithWaitForReady();
-            var methodDefinition = this.GetMethodDefinition<TRequest, TResponse>(GrpcCore.MethodType.Unary, serviceName, methodName);
+            var callOptions = new CallOptions(cancellationToken: token).WithWaitForReady();
+            var methodDefinition = this.GetMethodDefinition<TRequest, TResponse>(MethodType.Unary, serviceName, methodName);
             using (var call = this._invoker.AsyncUnaryCall(methodDefinition, null, callOptions, request))
             {
                 var result = await call.ResponseAsync.ConfigureAwait(false);
@@ -37,7 +39,18 @@ namespace SimpleRpc.Client
             }
         }
 
-        private GrpcCore.Method<TRequest, TResponse> GetMethodDefinition<TRequest, TResponse>(GrpcCore.MethodType methodType, string serviceName, string methodName)
+        public AsyncClientStreamingCall<TRequest, TResponse> AsyncClientStreamingCall<TRequest, TResponse>(string serviceName, string methodName, CancellationToken token)
+            where TRequest : class
+            where TResponse : class
+        {
+            var callOptions = new CallOptions(cancellationToken: token).WithWaitForReady();
+            var methodDefinition = this.GetMethodDefinition<TRequest, TResponse>(MethodType.ClientStreaming, serviceName, methodName);
+            var result = this._invoker.AsyncClientStreamingCall<TRequest, TResponse>(methodDefinition, this._host, callOptions);
+
+            return result;
+        }
+
+        private Method<TRequest, TResponse> GetMethodDefinition<TRequest, TResponse>(MethodType methodType, string serviceName, string methodName)
             where TRequest : class
             where TResponse : class
         {

@@ -1,10 +1,10 @@
-﻿using InterfaceLib;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SimpleRpc.Client;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
+using InterfaceLib;
 
 namespace ClientSample
 {
@@ -36,17 +36,21 @@ namespace ClientSample
                 if (input.StartsWith("cs:", StringComparison.OrdinalIgnoreCase))
                 {
                     userRequest.Keyword = input;
-                    var tokenSource = new CancellationTokenSource(1000 * 10);
-                    var userService = provider.GetService<IUserService>();
+                    var tokenSource = new CancellationTokenSource(1000 * 60 * 2);
 
-                    var userDto = await userService.TestClientStreaming(tokenSource.Token);
+                    var rpcChannel = provider.GetService<IRpcChannel>();
+                    var call = rpcChannel.AsyncClientStreamingCall<UserDto, UserDto>("greet.Greeter", "TestClientStreaming", tokenSource.Token);
+                    await call.RequestStream.WriteAsync(new UserDto { Id = 1, Name = "abc1" });
+                    await call.RequestStream.WriteAsync(new UserDto { Id = 2, Name = "abc2" });
+                    await call.RequestStream.CompleteAsync();
+                    var userDto = await call;
 
                     Console.WriteLine($"Id: {userDto.Id}, Name: {userDto.Name}, CreateDate: {userDto.CreateDate:yyyy-MM-dd HH:mm:ss fff}");
                 }
                 else
                 {
                     userRequest.Keyword = input;
-                    var tokenSource = new CancellationTokenSource(1000 * 10);
+                    var tokenSource = new CancellationTokenSource(1000 * 60 * 2);
                     var userService = provider.GetService<IUserService>();
                     var userDto = await userService.GetUserBy(userRequest, tokenSource.Token);
 
