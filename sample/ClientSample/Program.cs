@@ -37,7 +37,6 @@ namespace ClientSample
                 {
                     userRequest.Keyword = input;
                     var tokenSource = new CancellationTokenSource(1000 * 60 * 2);
-
                     var rpcChannel = provider.GetService<IRpcChannel>();
                     var call = rpcChannel.AsyncClientStreamingCall<UserDto, UserDto>("greet.Greeter", "TestClientStreaming", tokenSource.Token);
                     await call.RequestStream.WriteAsync(new UserDto { Id = 1, Name = "abc1" });
