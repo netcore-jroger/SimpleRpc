@@ -40,7 +40,7 @@ namespace SimpleRpc.Shared.Description
 
         private void CheckRpcMethodParameterType(MethodInfo method)
         {
-            if (method.ReturnType.GenericTypeArguments.Length != 1)
+            if (this.RpcMethodType == MethodType.Unary && method.ReturnType.GenericTypeArguments.Length != 1)
             {
                 throw new RpcDefineException("The return value type of RPC method must be Task<T>.");
             }

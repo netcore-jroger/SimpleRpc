@@ -2,9 +2,8 @@
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Grpc.Core;
-using InterfaceLib;
 using Microsoft.Extensions.Logging;
+using InterfaceLib;
 using SimpleRpc.Server;
 
 namespace ServerSample
@@ -18,11 +17,11 @@ namespace ServerSample
             this._logger = loggerFactory.CreateLogger<UserService>();
         }
 
-        public Task<UserDTO> GetUserBy(UserRequest request, CancellationToken token = default)
+        public Task<UserDto> GetUserBy(UserRequest request, CancellationToken token = default)
         {
             this._logger.LogInformation($"Receive client message：{JsonSerializer.Serialize(request)}");
 
-            return Task.FromResult(new UserDTO
+            return Task.FromResult(new UserDto
             {
                 Id = (int)DateTime.Now.Ticks / 10000,
                 Name = Guid.NewGuid().ToString("D") + request.Keyword,
@@ -30,16 +29,16 @@ namespace ServerSample
             });
         }
 
-        public async Task<UserDTO> TestClientStreaming(CancellationToken token = default)
+        public async Task<UserDto> TestClientStreaming(CancellationToken token = default)
         {
-            var requestStream = this.GetAsyncStreamReader<UserDTO>();
+            var requestStream = this.GetAsyncStreamReader<UserDto>();
 
-            while(await requestStream.MoveNext(token))
+            while(await requestStream.MoveNext(token).ConfigureAwait(false))
             {
                 this._logger.LogInformation($"Receive client message：{JsonSerializer.Serialize(requestStream.Current)}");
             }
 
-            return new UserDTO {
+            return new UserDto {
                 Id = (int)DateTime.Now.Ticks / 10000,
                 Name = Guid.NewGuid().ToString("D"),
                 CreateDate = DateTime.Now

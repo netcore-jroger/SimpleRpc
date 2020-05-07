@@ -1,25 +1,25 @@
-﻿using Grpc.Core;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Grpc.Core;
 using ProtoBuf;
 using SimpleRpc.Shared;
 using SimpleRpc.Shared.ServiceAnnotations;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace InterfaceLib
 {
-    [RpcService]
+    [RpcService("greet.Greeter")]
     public interface IUserService : IRpcService
     {
         [RpcMethod]
-        Task<UserDTO> GetUserBy(UserRequest request, CancellationToken token = default);
+        Task<UserDto> GetUserBy(UserRequest request, CancellationToken token = default);
 
-        [RpcMethod(MethodType = MethodType.ClientStreaming, RequestDataType = typeof(UserDTO))]
-        Task<UserDTO> TestClientStreaming(CancellationToken token = default);
+        [RpcMethod(MethodType = MethodType.ClientStreaming, RequestDataType = typeof(UserDto))]
+        Task<UserDto> TestClientStreaming(CancellationToken token = default);
     }
 
     [ProtoContract]
-    public class UserDTO
+    public class UserDto
     {
         [ProtoMember(1)]
         public int Id { get; set; }
