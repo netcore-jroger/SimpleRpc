@@ -37,7 +37,7 @@ deploy:
 - provider: NuGet
   name: production
   api_key:
-    secure: ceJi177DdM8KLdPZg4UjO4X6sigL2blN3O2gaRbJpD7XiJGuhMIjEjLIf6C2mB0E
+    secure: l6ItL+x2dkM+zlR4zd30e7Fbs/0Cifp2a2Qoi7OeNvFtxwOvYggSqMMebiXOZMrH
   skip_symbols: true
   artifact: /.*\.nupkg/
   on:
