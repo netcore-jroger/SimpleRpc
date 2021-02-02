@@ -11,7 +11,7 @@ A light-weight RPC wrap of google gRPC framework.
 | SimpleRpc.Server | ![Nuget](https://img.shields.io/nuget/v/SimpleRpc.Server.svg) |
 | SimpleRpc.Client | ![Nuget](https://img.shields.io/nuget/v/SimpleRpc.Client.svg) |
 
-## get start
+## Getting Started
 
 ```csharp
 // gRPC client side
