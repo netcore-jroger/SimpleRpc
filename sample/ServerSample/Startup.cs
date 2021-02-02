@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -17,6 +18,8 @@ namespace ServerSample
     {
         public void ConfigureServices(IServiceCollection services)
         {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
             var configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json", false, true).Build();
 
             //services.AddSingleton<IRpcServiceTypeFinder, FakeRpcServiceTypeFinder>();

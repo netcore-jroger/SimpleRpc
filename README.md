@@ -48,17 +48,17 @@ Console.WriteLine($"Id: {userDto.Id}, Name: {userDto.Name}, CreateDate: {userDto
 ```
 
 #### ServerStreaming
-> not support
+> not supported
 
 #### DuplexStreaming
-> not support
+> not supported
 
 ## Roadmap
 
-- [x] Unary support.
+- [x] Unary supported.
 
-- [x] ClientStreaming support.
+- [x] ClientStreaming supported.
 
-- [ ] ServerStreaming support.
+- [ ] ServerStreaming supported.
 
-- [ ] DuplexStreaming support.
+- [ ] DuplexStreaming supported.

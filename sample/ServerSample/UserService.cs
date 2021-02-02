@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Text.Json;
+using System.Text.Encodings.Web;
+using System.Text.Unicode;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -10,6 +12,7 @@ namespace ServerSample
 {
     public class UserService : RpcServiceBase, IUserService
     {
+        private static readonly JsonSerializerOptions _options = new JsonSerializerOptions { Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) };
         private readonly ILogger<UserService> _logger;
 
         public UserService(ILoggerFactory loggerFactory)
@@ -19,7 +22,7 @@ namespace ServerSample
 
         public Task<UserDto> GetUserBy(UserRequest request, CancellationToken token = default)
         {
-            this._logger.LogInformation($"Receive client message：{JsonSerializer.Serialize(request)}");
+            this._logger.LogInformation($"Receive client message：{JsonSerializer.Serialize(request, _options)}");
 
             return Task.FromResult(new UserDto
             {
