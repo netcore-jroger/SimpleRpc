@@ -1,0 +1,11 @@
+<Project>
+  <PropertyGroup>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Description>A light-weight RPC wrap of google gRPC framework.</Description>
+    <RepositoryUrl>https://github.com/netcore-jroger/SimpleRpc</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/netcore-jroger/SimpleRpc</PackageProjectUrl>
+    <PackageTags>gRPC</PackageTags>
+    <Version>0.1.9</Version>
+    <Copyright>JRoger © 2019-2021</Copyright>
+  </PropertyGroup>
+</Project>
