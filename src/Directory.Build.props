@@ -5,7 +5,7 @@
     <RepositoryUrl>https://github.com/netcore-jroger/SimpleRpc</RepositoryUrl>
     <PackageProjectUrl>https://github.com/netcore-jroger/SimpleRpc</PackageProjectUrl>
     <PackageTags>gRPC</PackageTags>
-    <Version>0.1.10</Version>
-    <Copyright>JRoger © 2019-2021</Copyright>
+    <Version>0.2.1</Version>
+    <Copyright>JRoger © 2019-2023</Copyright>
   </PropertyGroup>
 </Project>

@@ -5,8 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Grpc" Version="2.35.0" />
-    <PackageReference Include="protobuf-net" Version="3.0.73" />
+    <PackageReference Include="Grpc" Version="2.46.6" />
+    <PackageReference Include="protobuf-net" Version="3.2.26" />
   </ItemGroup>
 
 </Project>
