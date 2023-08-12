@@ -1,0 +1,39 @@
+name: SimpleRpc-CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v3
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 7.0.x
+    - name: Restore dependencies
+      run: |
+        dotnet restore ./SimpleRpc.sln
+
+    - name: Build project and Generate NuGet package
+      run: |
+        cd ./src/
+
+        dotnet build --configuration Release --nologo ./SimpleRpc.Shared/SimpleRpc.Shared.csproj || true
+        dotnet build --configuration Release --nologo ./SimpleRpc.Server/SimpleRpc.Server.csproj || true
+        dotnet build --configuration Release --nologo ./SimpleRpc.Client/SimpleRpc.Client.csproj || true
+
+        dotnet pack -c Release --nologo ./SimpleRpc.Shared/SimpleRpc.Shared.csproj -o ../nupkgs || true
+        dotnet pack -c Release --nologo ./SimpleRpc.Server/SimpleRpc.Server.csproj -o ../nupkgs || true
+        dotnet pack -c Release --nologo ./SimpleRpc.Client/SimpleRpc.Client.csproj -o ../nupkgs || true
+
+    # Runs a set of commands using the runners shell
+    - name: Publish nuget package.
+      run: |
+        dotnet nuget push ./nupkgs/*.nupkg --no-symbols true --skip-duplicate true -k ${{ secrets.NUGET_KEY }} -s https://api.nuget.org/v3/index.json || true
