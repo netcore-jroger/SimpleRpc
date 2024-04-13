@@ -1,11 +1,10 @@
 ﻿using System.Threading.Tasks;
 
-namespace SimpleRpc.Server
-{
-    public interface IRpcHost
-    {
-        Task StartAsync();
+namespace SimpleRpc.Server;
 
-        Task StopAsync();
-    }
+public interface IRpcHost
+{
+    Task StartAsync();
+
+    Task StopAsync();
 }

@@ -8,44 +8,43 @@ using Microsoft.Extensions.Logging;
 using InterfaceLib;
 using SimpleRpc.Server;
 
-namespace ServerSample
+namespace ServerSample;
+
+public class UserService : RpcServiceBase, IUserService
 {
-    public class UserService : RpcServiceBase, IUserService
+    private static readonly JsonSerializerOptions _options = new JsonSerializerOptions { Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) };
+    private readonly ILogger<UserService> _logger;
+
+    public UserService(ILoggerFactory loggerFactory)
     {
-        private static readonly JsonSerializerOptions _options = new JsonSerializerOptions { Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) };
-        private readonly ILogger<UserService> _logger;
+        this._logger = loggerFactory.CreateLogger<UserService>();
+    }
 
-        public UserService(ILoggerFactory loggerFactory)
+    public Task<UserDto> GetUserBy(UserRequest request, CancellationToken token = default)
+    {
+        this._logger.LogInformation($"Receive client message：{JsonSerializer.Serialize(request, _options)}");
+
+        return Task.FromResult(new UserDto
         {
-            this._logger = loggerFactory.CreateLogger<UserService>();
+            Id = (int)DateTime.Now.Ticks / 10000,
+            Name = Guid.NewGuid().ToString("D") + request.Keyword,
+            CreateDate = DateTime.Now
+        });
+    }
+
+    public async Task<UserDto> TestClientStreaming(CancellationToken token = default)
+    {
+        var requestStream = this.GetAsyncStreamReader<UserDto>();
+
+        while(await requestStream.MoveNext(token).ConfigureAwait(false))
+        {
+            this._logger.LogInformation($"Receive client message：{JsonSerializer.Serialize(requestStream.Current)}");
         }
 
-        public Task<UserDto> GetUserBy(UserRequest request, CancellationToken token = default)
-        {
-            this._logger.LogInformation($"Receive client message：{JsonSerializer.Serialize(request, _options)}");
-
-            return Task.FromResult(new UserDto
-            {
-                Id = (int)DateTime.Now.Ticks / 10000,
-                Name = Guid.NewGuid().ToString("D") + request.Keyword,
-                CreateDate = DateTime.Now
-            });
-        }
-
-        public async Task<UserDto> TestClientStreaming(CancellationToken token = default)
-        {
-            var requestStream = this.GetAsyncStreamReader<UserDto>();
-
-            while(await requestStream.MoveNext(token).ConfigureAwait(false))
-            {
-                this._logger.LogInformation($"Receive client message：{JsonSerializer.Serialize(requestStream.Current)}");
-            }
-
-            return new UserDto {
-                Id = (int)DateTime.Now.Ticks / 10000,
-                Name = Guid.NewGuid().ToString("D"),
-                CreateDate = DateTime.Now
-            };
-        }
+        return new UserDto {
+            Id = (int)DateTime.Now.Ticks / 10000,
+            Name = Guid.NewGuid().ToString("D"),
+            CreateDate = DateTime.Now
+        };
     }
 }

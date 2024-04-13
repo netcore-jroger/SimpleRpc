@@ -1,27 +1,59 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using GrpcCore = Grpc.Core;
 
-namespace SimpleRpc.Server.Internal
+namespace SimpleRpc.Server.Internal;
+
+internal class GrpcHost : IRpcHost
 {
-    internal class GrpcHost : IRpcHost
+    private readonly GrpcCore.Server _server;
+    private readonly ILogger<GrpcHost> _logger;
+
+    public GrpcHost(GrpcCore.Server server, ILoggerFactory loggerFactory)
     {
-        private readonly GrpcCore.Server _server;
+        this._server = server;
+        this._logger = loggerFactory.CreateLogger<GrpcHost>();
+    }
 
-        public GrpcHost(GrpcCore.Server server)
+    public async Task StartAsync()
+    {
+        await Task.Run(() => {
+            this.LogGrpcEndpoints(this._server.GetType());
+
+            this._server.Start();
+        }).ConfigureAwait(false);
+    }
+
+    public async Task StopAsync()
+    {
+        await this._server.ShutdownAsync().ConfigureAwait(false);
+    }
+
+    private void LogGrpcEndpoints(Type typeOfServer)
+    {
+        var fieldType = typeOfServer.GetField("callHandlers", BindingFlags.NonPublic | BindingFlags.Instance);
+        if (fieldType == null)
         {
-            this._server = server;
+            this._logger.LogInformation("No gRPC endpoints found!");
+            return;
         }
 
-        public async Task StartAsync()
+        var dict = fieldType.GetValue(this._server) as IDictionary;
+        if (dict is not null)
         {
-            await Task.Run(() => {
-                this._server.Start();
-            }).ConfigureAwait(false);
-        }
+            var builder = new StringBuilder();
+            builder.AppendLine("------ gRPC Endpoints ------");
 
-        public async Task StopAsync()
-        {
-            await this._server.ShutdownAsync().ConfigureAwait(false);
+            foreach (var endpoint in dict.Keys)
+            {
+                builder.AppendLine($"{endpoint}");
+            }
+
+            this._logger.LogInformation(builder.ToString());
         }
     }
 }
