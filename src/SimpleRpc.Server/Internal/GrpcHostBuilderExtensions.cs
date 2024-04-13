@@ -23,7 +23,10 @@ internal static class GrpcHostBuilderExtensions
 
     public static IRpcHostBuilder RegisterRpcService(this IRpcHostBuilder builder, List<RpcServiceDescription> rpcServiceDescriptions)
     {
-        if (!rpcServiceDescriptions.Any()) return builder;
+        if (rpcServiceDescriptions.Count == 0)
+        {
+            return builder;
+        }
 
         foreach (var rpcServiceDescription in rpcServiceDescriptions)
         {
@@ -60,7 +63,10 @@ internal static class GrpcHostBuilderExtensions
     public static IRpcHostBuilder AddUnaryMethods(this IRpcHostBuilder builder, Type serviceType)
     {
         var serviceName = ((RpcServiceAttribute)serviceType.GetCustomAttribute(typeof(RpcServiceAttribute)))?.Name;
-        if (string.IsNullOrWhiteSpace(serviceName)) serviceName = serviceType.Name;
+        if (string.IsNullOrWhiteSpace(serviceName))
+        {
+            serviceName = serviceType.Name;
+        }
 
         foreach (var method in serviceType.GetMethods().Where(_ => _.GetCustomAttribute(typeof(RpcMethodAttribute), true) != null))
         {
@@ -74,6 +80,7 @@ internal static class GrpcHostBuilderExtensions
 
             var methodName = GetMethodName(method);
             var addUnaryMethod = _addUnaryMethod.MakeGenericMethod(serviceType, requestType, responseType);
+
             addUnaryMethod.Invoke(builder, new[] { handler, serviceName, methodName });
         }
 
@@ -97,6 +104,7 @@ internal static class GrpcHostBuilderExtensions
 
             var methodName = GetMethodName(method);
             var addClientStreamingMethod = _addClientStreamingMethod.MakeGenericMethod(serviceType, requestType, responseType);
+
             addClientStreamingMethod.Invoke(builder, new[] { handler, serviceName, methodName });
         }
 

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Grpc.Core;
 using Grpc.Health.V1;
@@ -19,13 +20,15 @@ internal class GrpcHostBuilder : IRpcHostBuilder
     private readonly IServiceProvider _serviceProvider;
     private readonly ServerServiceDefinition.Builder _builder;
     private readonly ISerializer _serializer;
+    private readonly ILoggerFactory loggerFactory;
     private readonly RpcServerOptions _options;
 
-    public GrpcHostBuilder(IServiceProvider serviceProvider, ISerializer serializer, IOptions<RpcServerOptions> options)
+    public GrpcHostBuilder(IServiceProvider serviceProvider, ISerializer serializer, IOptions<RpcServerOptions> options, ILoggerFactory loggerFactory)
     {
         this._serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         this._builder = ServerServiceDefinition.CreateBuilder();
         this._serializer = serializer;
+        this.loggerFactory = loggerFactory;
         this._options = options.Value;
     }
 
@@ -100,6 +103,6 @@ internal class GrpcHostBuilder : IRpcHostBuilder
             }
         };
 
-        return new GrpcHost(server);
+        return new GrpcHost(server, loggerFactory);
     }
 }
