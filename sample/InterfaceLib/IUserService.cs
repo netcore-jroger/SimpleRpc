@@ -16,6 +16,9 @@ namespace InterfaceLib
 
         [RpcMethod(MethodType = MethodType.ClientStreaming, RequestDataType = typeof(UserDto))]
         Task<UserDto> TestClientStreaming(CancellationToken token = default);
+
+        [RpcMethod(MethodType = MethodType.ServerStreaming, RequestDataType = typeof(UserDto), ResponseDataType = typeof(UserDto))]
+        Task TestServerStreaming(UserDto request, CancellationToken token = default);
     }
 
     [ProtoContract]

@@ -45,6 +45,15 @@ public interface IRpcHostBuilder
         where TRequest : class
         where TResponse : class;
 
+    IRpcHostBuilder AddServerStreamingMethod<TService, TRequest, TResponse>(
+        Func<TService, TRequest, CancellationToken, Task> handler,
+        string serviceName,
+        string methodName
+    )
+        where TService : class, IRpcService
+        where TRequest : class
+        where TResponse : class;
+
     /// <summary>
     /// 创建 Rpc 宿主服务.
     /// </summary>

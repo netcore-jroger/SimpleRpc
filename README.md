@@ -58,6 +58,6 @@ Console.WriteLine($"Id: {userDto.Id}, Name: {userDto.Name}, CreateDate: {userDto
 
 - [x] ClientStreaming supported.
 
-- [ ] ServerStreaming supported.
+- [x] ServerStreaming supported.
 
 - [ ] DuplexStreaming supported.

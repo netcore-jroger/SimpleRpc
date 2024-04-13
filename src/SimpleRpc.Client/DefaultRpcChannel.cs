@@ -50,6 +50,17 @@ public class DefaultRpcChannel : IRpcChannel
         return result;
     }
 
+    public AsyncServerStreamingCall<TResponse> AsyncServerStreamingCall<TRequest, TResponse>(string serviceName, string methodName, TRequest request, CancellationToken token)
+        where TRequest : class
+        where TResponse : class
+    {
+        var callOptions = new CallOptions(cancellationToken: token).WithWaitForReady();
+        var methodDefinition = this.GetMethodDefinition<TRequest, TResponse>(MethodType.ServerStreaming, serviceName, methodName);
+        var result = this._invoker.AsyncServerStreamingCall<TRequest, TResponse>(methodDefinition, this._host, callOptions, request);
+
+        return result;
+    }
+
     private Method<TRequest, TResponse> GetMethodDefinition<TRequest, TResponse>(MethodType methodType, string serviceName, string methodName)
         where TRequest : class
         where TResponse : class

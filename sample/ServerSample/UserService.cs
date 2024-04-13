@@ -36,15 +36,45 @@ public class UserService : RpcServiceBase, IUserService
     {
         var requestStream = this.GetAsyncStreamReader<UserDto>();
 
-        while(await requestStream.MoveNext(token).ConfigureAwait(false))
+        while (await requestStream.MoveNext(token).ConfigureAwait(false))
         {
-            this._logger.LogInformation($"Receive client message：{JsonSerializer.Serialize(requestStream.Current)}");
+            this._logger.LogInformation($"Receive client client stream message：{JsonSerializer.Serialize(requestStream.Current)}");
         }
 
-        return new UserDto {
+        return new UserDto
+        {
             Id = (int)DateTime.Now.Ticks / 10000,
             Name = Guid.NewGuid().ToString("D"),
             CreateDate = DateTime.Now
         };
+    }
+
+    public async Task TestServerStreaming(UserDto request, CancellationToken token = default)
+    {
+        this._logger.LogInformation($"Receive client server streaming message：{JsonSerializer.Serialize(request)}");
+
+        var responseStream = this.GetServerStreamWriter<UserDto>();
+
+        await responseStream.WriteAsync(
+            new UserDto
+            {
+                Id = (int)DateTime.Now.Ticks / 10000,
+                Name = Guid.NewGuid().ToString("D"),
+                CreateDate = DateTime.Now
+            },
+            token
+        );
+
+        await Task.Delay(1000 * 2, token);
+
+        await responseStream.WriteAsync(
+            new UserDto
+            {
+                Id = (int)DateTime.Now.Ticks / 10000,
+                Name = Guid.NewGuid().ToString("D"),
+                CreateDate = DateTime.Now
+            },
+            token
+        );
     }
 }

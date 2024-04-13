@@ -14,6 +14,7 @@ internal class GrpcClientTypeBuilder
     private static readonly ConstructorInfo _ctorToCall = _clientBaseType.GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof(IRpcChannel) }, null);
     private static readonly MethodInfo _unaryMethodToCall = _clientBaseType.GetMethod(nameof(IRpcChannel.CallUnaryMethodAsync), BindingFlags.Instance | BindingFlags.NonPublic);
     private static readonly MethodInfo _clientStreamingMethodToCall = _clientBaseType.GetMethod(nameof(IRpcChannel.AsyncClientStreamingCall), BindingFlags.Instance | BindingFlags.NonPublic);
+    private static readonly MethodInfo _serverStreamingMethodToCall = _clientBaseType.GetMethod(nameof(IRpcChannel.AsyncServerStreamingCall), BindingFlags.Instance | BindingFlags.NonPublic);
 
     public TypeInfo Create<TService>()
         where TService : class, IRpcService
@@ -26,13 +27,13 @@ internal class GrpcClientTypeBuilder
         var typeBuilder = moduleBuilder.DefineType(serviceType.Name + "GrpcClientProxy", TypeAttributes.Public, _clientBaseType);
 
         typeBuilder.AddInterfaceImplementation(serviceType);
-        this.AddConstructor(typeBuilder);
-        this.AddMethods(typeBuilder, serviceType);
+        AddConstructor(typeBuilder);
+        AddMethods(typeBuilder, serviceType);
 
         return typeBuilder.CreateTypeInfo();
     }
 
-    private void AddConstructor(TypeBuilder typeBuilder)
+    private static void AddConstructor(TypeBuilder typeBuilder)
     {
         var ctorBuilder = typeBuilder.DefineConstructor(
             MethodAttributes.Public,
@@ -47,7 +48,7 @@ internal class GrpcClientTypeBuilder
         il.Emit(OpCodes.Ret);
     }
 
-    private void AddMethods(TypeBuilder typeBuilder, Type serviceType)
+    private static void AddMethods(TypeBuilder typeBuilder, Type serviceType)
     {
         var serviceDescription = new RpcServiceDescription(serviceType);
         
@@ -56,11 +57,15 @@ internal class GrpcClientTypeBuilder
             switch (methodDescription.RpcMethodType)
             {
                 case MethodType.Unary:
-                    this.AddUnaryMethod(typeBuilder, serviceDescription, methodDescription);
+                    AddUnaryMethod(typeBuilder, serviceDescription, methodDescription);
                     break;
 
                 case MethodType.ClientStreaming:
-                    this.AddClientStreamingMethod(typeBuilder, serviceDescription, methodDescription);
+                    AddClientStreamingMethod(typeBuilder, serviceDescription, methodDescription);
+                    break;
+
+                case MethodType.ServerStreaming:
+                    AddServerStreamingMethod(typeBuilder, serviceDescription, methodDescription);
                     break;
 
                 default:
@@ -69,7 +74,7 @@ internal class GrpcClientTypeBuilder
         }
     }
 
-    private void AddUnaryMethod(TypeBuilder typeBuilder, RpcServiceDescription serviceDescription, RpcMethodDescription methodDescription)
+    private static void AddUnaryMethod(TypeBuilder typeBuilder, RpcServiceDescription serviceDescription, RpcMethodDescription methodDescription)
     {
         var args = methodDescription.RpcMethod.GetParameters();
         var methodBuilder = typeBuilder.DefineMethod(
@@ -98,7 +103,7 @@ internal class GrpcClientTypeBuilder
         typeBuilder.DefineMethodOverride(methodBuilder, methodDescription.RpcMethod);
     }
 
-    private void AddClientStreamingMethod(TypeBuilder typeBuilder, RpcServiceDescription serviceDescription, RpcMethodDescription methodDescription)
+    private static void AddClientStreamingMethod(TypeBuilder typeBuilder, RpcServiceDescription serviceDescription, RpcMethodDescription methodDescription)
     {
         var args = methodDescription.RpcMethod.GetParameters();
         var methodBuilder = typeBuilder.DefineMethod(
@@ -118,6 +123,35 @@ internal class GrpcClientTypeBuilder
             _clientStreamingMethodToCall.MakeGenericMethod(new[] {
                 methodDescription.RequestDataType,
                 methodDescription.RpcMethod.ReturnType.GetGenericArguments()[0]
+            })
+        );
+
+        il.Emit(OpCodes.Ret);
+
+        typeBuilder.DefineMethodOverride(methodBuilder, methodDescription.RpcMethod);
+    }
+
+    private static void AddServerStreamingMethod(TypeBuilder typeBuilder, RpcServiceDescription serviceDescription, RpcMethodDescription methodDescription)
+    {
+        var args = methodDescription.RpcMethod.GetParameters();
+        var methodBuilder = typeBuilder.DefineMethod(
+            methodDescription.RpcMethodName,
+            MethodAttributes.Public | MethodAttributes.Virtual,
+            methodDescription.RpcMethod.ReturnType,
+            (from arg in args select arg.ParameterType).ToArray()
+        );
+        var il = methodBuilder.GetILGenerator();
+        il.Emit(OpCodes.Ldarg_0);
+        il.Emit(OpCodes.Ldstr, serviceDescription.RpcServiceName);
+        il.Emit(OpCodes.Ldstr, methodDescription.RpcMethodName);
+        il.Emit(OpCodes.Ldarg_1);
+        il.Emit(OpCodes.Ldarg_2);
+
+        il.Emit(
+            OpCodes.Call,
+            _serverStreamingMethodToCall.MakeGenericMethod(new[] {
+                methodDescription.ResponseDataType,
+                methodDescription.ResponseDataType
             })
         );
 
