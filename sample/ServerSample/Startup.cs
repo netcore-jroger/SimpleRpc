@@ -12,49 +12,48 @@ using SimpleRpc.Server;
 using SimpleRpc.Shared;
 using SimpleRpc.Shared.Description;
 
-namespace ServerSample
+namespace ServerSample;
+
+public class Startup
 {
-    public class Startup
+    public void ConfigureServices(IServiceCollection services)
     {
-        public void ConfigureServices(IServiceCollection services)
-        {
-            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-            var configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json", false, true).Build();
+        var configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json", false, true).Build();
 
-            //services.AddSingleton<IRpcServiceTypeFinder, FakeRpcServiceTypeFinder>();
-            services.AddRpcServer(option => {
-                configuration.GetSection(RpcConfigInformation.RpcServerConfigSectionName).Bind(option);
-            });
-            services.AddScoped<IUserService, UserService>();
-        }
-
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-        {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-
-            app.Run(async (context) =>
-            {
-                await context.Response.WriteAsync("Hello World!");
-            });
-        }
+        //services.AddSingleton<IRpcServiceTypeFinder, FakeRpcServiceTypeFinder>();
+        services.AddRpcServer(option => {
+            configuration.GetSection(RpcConfigInformation.RpcServerConfigSectionName).Bind(option);
+        });
+        services.AddScoped<IUserService, UserService>();
     }
 
-    public class FakeRpcServiceTypeFinder : IRpcServiceTypeFinder
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
-        public List<Type> FindAllRpcServiceType()
+        if (env.IsDevelopment())
         {
-            return new List<Type> {
-                typeof(IUserService)
-            };
+            app.UseDeveloperExceptionPage();
         }
 
-        public List<RpcServiceDescription> GetAllRpcServiceDescription()
+        app.Run(async (context) =>
         {
-            throw new NotImplementedException();
-        }
+            await context.Response.WriteAsync("Hello World!");
+        });
+    }
+}
+
+public class FakeRpcServiceTypeFinder : IRpcServiceTypeFinder
+{
+    public List<Type> FindAllRpcServiceType()
+    {
+        return new List<Type> {
+            typeof(IUserService)
+        };
+    }
+
+    public List<RpcServiceDescription> GetAllRpcServiceDescription()
+    {
+        throw new NotImplementedException();
     }
 }
