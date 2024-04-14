@@ -54,8 +54,7 @@ internal static class MethodHandlerGenerator
         return func;
     }
 
-    public static Func<TService, CancellationToken, Task> GenerateDuplexStreamingMethodHandler<TService, TResponse>(MethodInfo method)
-        where TResponse : class
+    public static Func<TService, CancellationToken, Task> GenerateDuplexStreamingMethodHandler<TService>(MethodInfo method)
     {
         var serviceParameter = Expression.Parameter(typeof(TService));
         var ctParameter = Expression.Parameter(typeof(CancellationToken));

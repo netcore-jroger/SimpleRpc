@@ -76,7 +76,7 @@ internal static class GrpcHostBuilderExtensions
 
                     case MethodType.DuplexStreaming:
                         // Func<TService, CancellationToken, Task>
-                        var duplexStreamingHandlerGenerator = _duplexStreamingHandlerGenerator.MakeGenericMethod(rpcServiceDescription.RpcServiceType, rpcMethodDescription.ResponseDataType);
+                        var duplexStreamingHandlerGenerator = _duplexStreamingHandlerGenerator.MakeGenericMethod(rpcServiceDescription.RpcServiceType);
                         var duplexStreamingHandler = duplexStreamingHandlerGenerator.Invoke(null, new[] { rpcMethodDescription.RpcMethod });
 
                         var addDuplexStreamingMethod = _addDuplexStreamingMethod.MakeGenericMethod(rpcServiceDescription.RpcServiceType, rpcMethodDescription.RequestDataType, rpcMethodDescription.ResponseDataType);
