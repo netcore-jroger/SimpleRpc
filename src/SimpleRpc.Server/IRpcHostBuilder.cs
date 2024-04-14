@@ -67,6 +67,25 @@ public interface IRpcHostBuilder
         where TResponse : class;
 
     /// <summary>
+    /// 添加 DuplexStreamingMethod RPC 方法
+    /// </summary>
+    /// <typeparam name="TService"></typeparam>
+    /// <typeparam name="TRequest"></typeparam>
+    /// <typeparam name="TResponse"></typeparam>
+    /// <param name="handler"></param>
+    /// <param name="serviceName"></param>
+    /// <param name="methodName"></param>
+    /// <returns></returns>
+    IRpcHostBuilder AddDuplexStreamingMethod<TService, TRequest, TResponse>(
+        Func<TService, CancellationToken, Task> handler,
+        string serviceName,
+        string methodName
+    )
+        where TService : class, IRpcService
+        where TRequest : class
+        where TResponse : class;
+
+    /// <summary>
     /// 创建 Rpc 宿主服务.
     /// </summary>
     /// <returns></returns>

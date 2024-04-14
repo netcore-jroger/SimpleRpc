@@ -22,12 +22,11 @@ public class UserService : RpcServiceBase, IUserService
         this._logger = loggerFactory.CreateLogger<UserService>();
     }
 
-    public Task<UserDto> GetUserBy(UserRequest request, CancellationToken token = default)
+    public Task<UserDto> TestUnary(UserRequest request, CancellationToken token = default)
     {
-        this._logger.LogInformation($"Receive client message：{JsonSerializer.Serialize(request, _options)}");
+        this._logger.LogInformation($"Receive client Unary message：{JsonSerializer.Serialize(request, _options)}");
 
-        return Task.FromResult(new UserDto
-        {
+        return Task.FromResult(new UserDto {
             Id = (int)DateTime.Now.Ticks / 10000,
             Name = Guid.NewGuid().ToString("D") + request.Keyword,
             CreateDate = DateTime.Now
@@ -38,13 +37,12 @@ public class UserService : RpcServiceBase, IUserService
     {
         var requestStream = this.GetAsyncStreamReader<UserDto>();
 
-        while (await requestStream.MoveNext(token).ConfigureAwait(false))
+        while ( await requestStream.MoveNext(token).ConfigureAwait(false) )
         {
-            this._logger.LogInformation($"Receive client client stream message：{JsonSerializer.Serialize(requestStream.Current)}");
+            this._logger.LogInformation($"Receive client ClientStreaming message：{JsonSerializer.Serialize(requestStream.Current)}");
         }
 
-        return new UserDto
-        {
+        return new UserDto {
             Id = (int)DateTime.Now.Ticks / 10000,
             Name = Guid.NewGuid().ToString("D"),
             CreateDate = DateTime.Now
@@ -53,14 +51,13 @@ public class UserService : RpcServiceBase, IUserService
 
     public async Task TestServerStreaming(UserRequest request, CancellationToken token = default)
     {
-        this._logger.LogInformation($"Receive client server streaming message：{JsonSerializer.Serialize(request)}");
+        this._logger.LogInformation($"Receive client ServerStreaming message：{JsonSerializer.Serialize(request)}");
 
         var responseStream = this.GetServerStreamWriter<UserDto>();
 
         // NOTE: do not use method signature: Task WriteAsync(T message, CancellationToken cancellationToken)
         await responseStream.WriteAsync(
-            new UserDto
-            {
+            new UserDto {
                 Id = (int)DateTime.Now.Ticks / 10000,
                 Name = Guid.NewGuid().ToString("D"),
                 CreateDate = DateTime.Now
@@ -70,12 +67,42 @@ public class UserService : RpcServiceBase, IUserService
         await Task.Delay(1000 * 2, token);
 
         await responseStream.WriteAsync(
-            new UserDto
-            {
+            new UserDto {
                 Id = (int)DateTime.Now.Ticks / 10000,
                 Name = Guid.NewGuid().ToString("D"),
                 CreateDate = DateTime.Now
             }
         );
+    }
+
+    public async Task TestDuplexStreaming(CancellationToken token = default)
+    {
+        var responseStream = this.GetServerStreamWriter<UserDto>();
+
+        // NOTE: do not use method signature: Task WriteAsync(T message, CancellationToken cancellationToken)
+        await responseStream.WriteAsync(
+            new UserDto {
+                Id = (int)DateTime.Now.Ticks / 10000,
+                Name = $"From Server --> DuplexStreaming: {Guid.NewGuid():D}",
+                CreateDate = DateTime.Now
+            }
+        );
+
+        await Task.Delay(1000 * 2, token);
+
+        await responseStream.WriteAsync(
+            new UserDto {
+                Id = (int)DateTime.Now.Ticks / 10000,
+                Name = $"From Server --> DuplexStreaming: {Guid.NewGuid():D}",
+                CreateDate = DateTime.Now
+            }
+        );
+
+        var requestStream = this.GetAsyncStreamReader<UserRequest>();
+
+        while ( await requestStream.MoveNext(token).ConfigureAwait(false) )
+        {
+            this._logger.LogInformation($"Receive client DuplexStreaming message：{JsonSerializer.Serialize(requestStream.Current)}");
+        }
     }
 }

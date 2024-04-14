@@ -13,7 +13,7 @@ A light-weight RPC wrap of google gRPC framework.
 ## Getting Started
 
 ```csharp
-// gRPC client side
+// gRPC Client side
 var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json", false, true)
     .Build();
@@ -25,7 +25,7 @@ var provider = new ServiceCollection()
 
 #### Unary
 ```csharp
-// gRPC client side
+// gRPC Client side
 var tokenSource = new CancellationTokenSource(1000 * 60 * 2);
 var userService = provider.GetService<IUserService>();
 var userDto = await userService.GetUserBy(userRequest, tokenSource.Token);
@@ -47,8 +47,8 @@ Console.WriteLine($"Id: {userDto.Id}, Name: {userDto.Name}, CreateDate: {userDto
 ```
 
 // gRPC Server side
-- see `IUserService.cs` file line: 17-18
-- see `UserService.cs` file line: 35-50
+- see `IUserService.cs` line: 19-20
+- see `UserService.cs` line: 36-50
 
 #### ServerStreaming
 ```csharp
@@ -66,11 +66,30 @@ Console.WriteLine($"ServerStreaming: Id: {userDto.Id}, Name: {userDto.Name}, Cre
 ```
 
 // gRPC Server side
-- see `IUserService.cs` file line: 20-21
-- see `UserService.cs` file line: 52-78
+- see `IUserService.cs` line: 22-23
+- see `UserService.cs` line: 52-76
 
 #### DuplexStreaming
-> not supported
+```csharp
+var tokenSource = new CancellationTokenSource(1000 * 60 * 2);
+var rpcChannel = provider.GetService<IRpcChannel>();
+var call = rpcChannel.AsyncDuplexStreamingCall<UserRequest, UserDto>("greet.Greeter", "TestDuplexStreaming", tokenSource.Token);
+await call.ResponseStream.MoveNext(tokenSource.Token).ConfigureAwait(false);
+var userDto = call.ResponseStream.Current;
+Console.WriteLine($"DuplexStreaming: Id: {userDto.Id}, Name: {userDto.Name}, CreateDate: {userDto.CreateDate:yyyy-MM-dd HH:mm:ss fff}");
+
+await call.ResponseStream.MoveNext(tokenSource.Token).ConfigureAwait(false);
+userDto = call.ResponseStream.Current;
+Console.WriteLine($"DuplexStreaming: Id: {userDto.Id}, Name: {userDto.Name}, CreateDate: {userDto.CreateDate:yyyy-MM-dd HH:mm:ss fff}");
+
+await call.RequestStream.WriteAsync(new UserRequest { Id = 1, Keyword = $"client[DuplexStreaming]1 - {input}" });
+await call.RequestStream.WriteAsync(new UserRequest { Id = 2, Keyword = $"client[DuplexStreaming]2 - {input}" });
+await call.RequestStream.CompleteAsync();
+```
+
+// gRPC Server side
+- see `IUserService.cs` line: 25-26
+- see `UserService.cs` line: 78-107
 
 ## Roadmap
 
@@ -80,4 +99,4 @@ Console.WriteLine($"ServerStreaming: Id: {userDto.Id}, Name: {userDto.Name}, Cre
 
 - [x] ServerStreaming supported.
 
-- [ ] DuplexStreaming supported.
+- [x] DuplexStreaming supported.

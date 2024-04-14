@@ -14,9 +14,11 @@ internal class GrpcClientTypeBuilder
 {
     private static readonly Type _clientBaseType = typeof(GrpcClientBase);
     private static readonly ConstructorInfo _ctorToCall = _clientBaseType.GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof(IRpcChannel) }, null);
+
     private static readonly MethodInfo _unaryMethodToCall = _clientBaseType.GetMethod(nameof(IRpcChannel.CallUnaryMethodAsync), BindingFlags.Instance | BindingFlags.NonPublic);
     private static readonly MethodInfo _clientStreamingMethodToCall = _clientBaseType.GetMethod(nameof(IRpcChannel.AsyncClientStreamingCall), BindingFlags.Instance | BindingFlags.NonPublic);
     private static readonly MethodInfo _serverStreamingMethodToCall = _clientBaseType.GetMethod(nameof(IRpcChannel.AsyncServerStreamingCall), BindingFlags.Instance | BindingFlags.NonPublic);
+    private static readonly MethodInfo _duplexStreamingMethodToCall = _clientBaseType.GetMethod(nameof(IRpcChannel.AsyncDuplexStreamingCall), BindingFlags.Instance | BindingFlags.NonPublic);
 
     public TypeInfo Create<TService>() where TService : class, IRpcService
     {
@@ -52,10 +54,10 @@ internal class GrpcClientTypeBuilder
     private static void AddMethods(TypeBuilder typeBuilder, Type serviceType)
     {
         var serviceDescription = new RpcServiceDescription(serviceType);
-        
-        foreach (var methodDescription in serviceDescription.RpcMethods)
+
+        foreach ( var methodDescription in serviceDescription.RpcMethods )
         {
-            switch (methodDescription.RpcMethodType)
+            switch ( methodDescription.RpcMethodType )
             {
                 case MethodType.Unary:
                     AddUnaryMethod(typeBuilder, serviceDescription, methodDescription);
@@ -67,6 +69,10 @@ internal class GrpcClientTypeBuilder
 
                 case MethodType.ServerStreaming:
                     AddServerStreamingMethod(typeBuilder, serviceDescription, methodDescription);
+                    break;
+
+                case MethodType.DuplexStreaming:
+                    AddDuplexStreamingMethod(typeBuilder, serviceDescription, methodDescription);
                     break;
 
                 default:
@@ -93,7 +99,7 @@ internal class GrpcClientTypeBuilder
 
         il.Emit(
             OpCodes.Call,
-            _unaryMethodToCall.MakeGenericMethod(new [] {
+            _unaryMethodToCall.MakeGenericMethod(new[] {
                 methodDescription.RpcMethod.GetParameters()[0].ParameterType,
                 methodDescription.RpcMethod.ReturnType.GetGenericArguments()[0]
             })
@@ -151,7 +157,35 @@ internal class GrpcClientTypeBuilder
         il.Emit(
             OpCodes.Call,
             _serverStreamingMethodToCall.MakeGenericMethod(new[] {
-                methodDescription.ResponseDataType,
+                methodDescription.RequestDataType,
+                methodDescription.ResponseDataType
+            })
+        );
+
+        il.Emit(OpCodes.Ret);
+
+        typeBuilder.DefineMethodOverride(methodBuilder, methodDescription.RpcMethod);
+    }
+
+    private static void AddDuplexStreamingMethod(TypeBuilder typeBuilder, RpcServiceDescription serviceDescription, RpcMethodDescription methodDescription)
+    {
+        var args = methodDescription.RpcMethod.GetParameters();
+        var methodBuilder = typeBuilder.DefineMethod(
+            methodDescription.RpcMethodName,
+            MethodAttributes.Public | MethodAttributes.Virtual,
+            methodDescription.RpcMethod.ReturnType,
+            (from arg in args select arg.ParameterType).ToArray()
+        );
+        var il = methodBuilder.GetILGenerator();
+        il.Emit(OpCodes.Ldarg_0);
+        il.Emit(OpCodes.Ldstr, serviceDescription.RpcServiceName);
+        il.Emit(OpCodes.Ldstr, methodDescription.RpcMethodName);
+        il.Emit(OpCodes.Ldarg_1);
+
+        il.Emit(
+            OpCodes.Call,
+            _duplexStreamingMethodToCall.MakeGenericMethod(new[] {
+                methodDescription.RequestDataType,
                 methodDescription.ResponseDataType
             })
         );

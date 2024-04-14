@@ -14,13 +14,16 @@ namespace InterfaceLib
     public interface IUserService : IRpcService
     {
         [RpcMethod]
-        Task<UserDto> GetUserBy(UserRequest request, CancellationToken token = default);
+        Task<UserDto> TestUnary(UserRequest request, CancellationToken token = default);
 
         [RpcMethod(MethodType = MethodType.ClientStreaming, RequestDataType = typeof(UserDto))]
         Task<UserDto> TestClientStreaming(CancellationToken token = default);
 
         [RpcMethod(MethodType = MethodType.ServerStreaming, RequestDataType = typeof(UserRequest), ResponseDataType = typeof(UserDto))]
         Task TestServerStreaming(UserRequest request, CancellationToken token = default);
+
+        [RpcMethod(MethodType = MethodType.DuplexStreaming, RequestDataType = typeof(UserRequest), ResponseDataType = typeof(UserDto))]
+        Task TestDuplexStreaming(CancellationToken token = default);
     }
 
     [ProtoContract]

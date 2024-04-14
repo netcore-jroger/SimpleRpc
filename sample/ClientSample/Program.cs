@@ -26,16 +26,16 @@ class Program
             Id = 1
         };
 
-        while (true)
+        while ( true )
         {
             Console.Write("Please input keyword:");
             var input = Console.ReadLine();
-            if (input.Equals("Q", StringComparison.OrdinalIgnoreCase))
+            if ( input.Equals("Q", StringComparison.OrdinalIgnoreCase) )
             {
                 break;
             }
 
-            if (input.StartsWith("cs:", StringComparison.OrdinalIgnoreCase))
+            if ( input.StartsWith("cs:", StringComparison.OrdinalIgnoreCase) )
             {
                 userRequest.Keyword = input;
                 var tokenSource = new CancellationTokenSource(1000 * 60 * 2);
@@ -48,7 +48,7 @@ class Program
 
                 Console.WriteLine($"ClientStreaming: Id: {userDto.Id}, Name: {userDto.Name}, CreateDate: {userDto.CreateDate:yyyy-MM-dd HH:mm:ss fff}");
             }
-            else if (input.StartsWith(value: "ss:", StringComparison.OrdinalIgnoreCase))
+            else if ( input.StartsWith(value: "ss:", StringComparison.OrdinalIgnoreCase) )
             {
                 var tokenSource = new CancellationTokenSource(1000 * 60 * 2);
                 var rpcChannel = provider.GetService<IRpcChannel>();
@@ -61,12 +61,29 @@ class Program
                 userDto = call.ResponseStream.Current;
                 Console.WriteLine($"ServerStreaming: Id: {userDto.Id}, Name: {userDto.Name}, CreateDate: {userDto.CreateDate:yyyy-MM-dd HH:mm:ss fff}");
             }
+            else if ( input.StartsWith(value: "ds:", StringComparison.OrdinalIgnoreCase) )
+            {
+                var tokenSource = new CancellationTokenSource(1000 * 60 * 2);
+                var rpcChannel = provider.GetService<IRpcChannel>();
+                var call = rpcChannel.AsyncDuplexStreamingCall<UserRequest, UserDto>("greet.Greeter", "TestDuplexStreaming", tokenSource.Token);
+                await call.ResponseStream.MoveNext(tokenSource.Token).ConfigureAwait(false);
+                var userDto = call.ResponseStream.Current;
+                Console.WriteLine($"DuplexStreaming: Id: {userDto.Id}, Name: {userDto.Name}, CreateDate: {userDto.CreateDate:yyyy-MM-dd HH:mm:ss fff}");
+
+                await call.ResponseStream.MoveNext(tokenSource.Token).ConfigureAwait(false);
+                userDto = call.ResponseStream.Current;
+                Console.WriteLine($"DuplexStreaming: Id: {userDto.Id}, Name: {userDto.Name}, CreateDate: {userDto.CreateDate:yyyy-MM-dd HH:mm:ss fff}");
+
+                await call.RequestStream.WriteAsync(new UserRequest { Id = 1, Keyword = $"client[DuplexStreaming]1 - {input}" });
+                await call.RequestStream.WriteAsync(new UserRequest { Id = 2, Keyword = $"client[DuplexStreaming]2 - {input}" });
+                await call.RequestStream.CompleteAsync();
+            }
             else
             {
                 userRequest.Keyword = input;
                 var tokenSource = new CancellationTokenSource(1000 * 60 * 2);
                 var userService = provider.GetService<IUserService>();
-                var userDto = await userService.GetUserBy(userRequest, tokenSource.Token);
+                var userDto = await userService.TestUnary(userRequest, tokenSource.Token);
 
                 Console.WriteLine($"Unary: Id: {userDto.Id}, Name: {userDto.Name}, CreateDate: {userDto.CreateDate:yyyy-MM-dd HH:mm:ss fff}");
             }
