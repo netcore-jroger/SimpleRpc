@@ -20,16 +20,16 @@ internal class GrpcHostBuilder : IRpcHostBuilder
     private readonly IServiceProvider _serviceProvider;
     private readonly ServerServiceDefinition.Builder _builder;
     private readonly ISerializer _serializer;
-    private readonly ILoggerFactory loggerFactory;
     private readonly RpcServerOptions _options;
+    private readonly ILoggerFactory _loggerFactory;
 
     public GrpcHostBuilder(IServiceProvider serviceProvider, ISerializer serializer, IOptions<RpcServerOptions> options, ILoggerFactory loggerFactory)
     {
         this._serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         this._builder = ServerServiceDefinition.CreateBuilder();
         this._serializer = serializer;
-        this.loggerFactory = loggerFactory;
         this._options = options.Value;
+        this._loggerFactory = loggerFactory;
     }
 
     public IRpcHostBuilder AddUnaryMethod<TService, TRequest, TResponse> (
@@ -89,6 +89,37 @@ internal class GrpcHostBuilder : IRpcHostBuilder
         return this;
     }
 
+    public IRpcHostBuilder AddServerStreamingMethod<TService, TRequest, TResponse>(
+        Func<TService, TRequest, CancellationToken, Task> handler,
+        string serviceName,
+        string methodName
+    )
+        where TService : class, IRpcService
+        where TRequest : class
+        where TResponse : class
+    {
+        var method = MethodDefinitionGenerator.CreateMethodDefinition<TRequest, TResponse>(MethodType.ServerStreaming, serviceName, methodName, this._serializer);
+
+        this._builder.AddMethod(method, LocalServerStreamingServerMethod);
+
+        Task LocalServerStreamingServerMethod(TRequest request, IServerStreamWriter<TResponse> responseStream, ServerCallContext context)
+        {
+            using (var scope = this._serviceProvider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetServices<TService>().First(s => !s.GetType().Name.EndsWith("GrpcClientProxy", StringComparison.OrdinalIgnoreCase));
+                if (service is RpcServiceBase baseService)
+                {
+                    baseService.Context = context;
+                    baseService.SetServerStreamWriter(responseStream);
+                }
+
+                return handler(service, request, context.CancellationToken);
+            }
+        }
+
+        return this;
+    }
+
     public IRpcHost Build()
     {
         var healthService = new HealthServiceImpl();
@@ -103,6 +134,6 @@ internal class GrpcHostBuilder : IRpcHostBuilder
             }
         };
 
-        return new GrpcHost(server, loggerFactory);
+        return new GrpcHost(server, _loggerFactory);
     }
 }

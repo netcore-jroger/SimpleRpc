@@ -13,4 +13,8 @@ public interface IRpcChannel
     AsyncClientStreamingCall<TRequest, TResponse> AsyncClientStreamingCall<TRequest, TResponse>(string serviceName, string methodName, CancellationToken token)
         where TRequest : class
         where TResponse : class;
+
+    AsyncServerStreamingCall<TResponse> AsyncServerStreamingCall<TRequest, TResponse>(string serviceName, string methodName, TRequest request, CancellationToken token)
+        where TRequest : class
+        where TResponse : class;
 }
