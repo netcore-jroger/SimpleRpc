@@ -44,8 +44,7 @@ internal class GrpcHost : IRpcHost
             return;
         }
 
-        var dict = fieldType.GetValue(this._server) as IDictionary;
-        if ( dict is not null )
+        if ( fieldType.GetValue(this._server) is IDictionary dict )
         {
             var builder = new StringBuilder();
             builder.AppendLine("------ gRPC Endpoints ------");

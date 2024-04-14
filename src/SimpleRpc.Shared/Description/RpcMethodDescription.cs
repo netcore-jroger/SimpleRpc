@@ -37,7 +37,7 @@ namespace SimpleRpc.Shared.Description
             var attr = methodInfo.GetCustomAttribute(typeof(RpcMethodAttribute), true) as RpcMethodAttribute;
 
             return (
-                string.IsNullOrWhiteSpace(attr.Name) ? methodInfo.Name : attr.Name,
+                string.IsNullOrWhiteSpace(attr?.Name) ? methodInfo.Name : attr.Name,
                 attr.MethodType,
                 attr.RequestDataType,
                 attr.ResponseDataType

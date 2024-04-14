@@ -23,10 +23,13 @@ namespace SimpleRpc.Shared.Description
 
         public List<RpcMethodDescription> RpcMethods { get; }
 
-        private static string GetRpcServiceName(Type rpcServiceType)
+        private static string GetRpcServiceName(MemberInfo rpcServiceType)
         {
             var rpcServiceName = ((RpcServiceAttribute)rpcServiceType.GetCustomAttribute(typeof(RpcServiceAttribute)))?.Name;
-            if (string.IsNullOrWhiteSpace(rpcServiceName)) rpcServiceName = rpcServiceType.Name;
+            if (string.IsNullOrWhiteSpace(rpcServiceName))
+            {
+                rpcServiceName = rpcServiceType.Name;
+            }
 
             return rpcServiceName;
         }
@@ -35,8 +38,8 @@ namespace SimpleRpc.Shared.Description
         {
             return rpcServiceType.GetTypeInfo()
                 .GetMethods(BindingFlags.Public | BindingFlags.Instance)
-                .Where(_ => _.GetCustomAttribute(typeof(RpcMethodAttribute), true) != null)
-                .Select(_ => new RpcMethodDescription(_))
+                .Where(m => m.GetCustomAttribute(typeof(RpcMethodAttribute), true) != null)
+                .Select(m => new RpcMethodDescription(m))
                 .ToList();
         }
     }

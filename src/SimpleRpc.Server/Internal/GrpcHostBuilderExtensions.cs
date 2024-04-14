@@ -84,7 +84,7 @@ internal static class GrpcHostBuilderExtensions
                         break;
 
                     default:
-                        throw new NotSupportedException($"unsupport gRPC MethodType: {rpcMethodDescription.RpcMethodType}");
+                        throw new NotSupportedException($"unsupported gRPC MethodType: {rpcMethodDescription.RpcMethodType}");
                 }
             }
         }
@@ -100,7 +100,7 @@ internal static class GrpcHostBuilderExtensions
             serviceName = serviceType.Name;
         }
 
-        foreach ( var method in serviceType.GetMethods().Where(_ => _.GetCustomAttribute(typeof(RpcMethodAttribute), true) != null) )
+        foreach ( var method in serviceType.GetMethods().Where(m => m.GetCustomAttribute(typeof(RpcMethodAttribute), true) != null) )
         {
             CheckRpcMethodParameterType(method);
 
@@ -127,7 +127,7 @@ internal static class GrpcHostBuilderExtensions
             serviceName = serviceType.Name;
         }
 
-        foreach ( var method in serviceType.GetMethods().Where(_ => _.GetCustomAttribute(typeof(RpcMethodAttribute), true) != null) )
+        foreach ( var method in serviceType.GetMethods().Where(m => m.GetCustomAttribute(typeof(RpcMethodAttribute), true) != null) )
         {
             CheckRpcMethodParameterType(method);
 

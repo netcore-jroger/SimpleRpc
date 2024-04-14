@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 
 namespace SimpleRpc.Shared.Internal
 {
-    internal class MethodDefinitionGenerator
+    internal static class MethodDefinitionGenerator
     {
         public static Method<TRequest, TResponse> CreateMethodDefinition<TRequest, TResponse>(MethodType methodType, string serviceName, string methodName, ISerializer serializer)
             where TRequest : class

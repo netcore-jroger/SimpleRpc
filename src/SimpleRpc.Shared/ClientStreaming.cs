@@ -31,7 +31,7 @@ namespace SimpleRpc.Shared
             continuation();
         }
 
-        public async override Task<TResponse> GetResult()
+        public override async Task<TResponse> GetResult()
         {
             var response = await this.AsyncClientStreamingCall;
 

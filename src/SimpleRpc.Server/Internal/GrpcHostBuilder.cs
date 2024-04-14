@@ -49,28 +49,27 @@ internal class GrpcHostBuilder : IRpcHostBuilder
 
         this._builder.AddMethod(method, UnaryServerMethodDelegate);
 
-        // See delegate: UnaryServerMethod<TRequest, TResponse>
+        return this;
+
+        // See delegate type: UnaryServerMethod<TRequest, TResponse>
         Task<TResponse> UnaryServerMethodDelegate(TRequest request, ServerCallContext context)
         {
-            using ( var scope = this._serviceProvider.CreateScope() )
+            using var scope = this._serviceProvider.CreateScope();
+
+            var service = scope.ServiceProvider.GetServices<TService>().First(s => !s.GetType().Name.EndsWith("GrpcClientProxy", StringComparison.OrdinalIgnoreCase));
+            if ( service is RpcServiceBase baseService )
             {
-                var service = scope.ServiceProvider.GetServices<TService>().First(s => !s.GetType().Name.EndsWith("GrpcClientProxy", StringComparison.OrdinalIgnoreCase));
-                if ( service is RpcServiceBase baseService )
-                {
-                    baseService.Context = context;
-                }
-                else
-                {
-                    throw new NotImplementedException($"Service type {typeof(TService)} must implement abstract class {typeof(RpcServiceBase)}");
-                }
-
-                this._logger.LogInformation($"Request gRPC endpoint: {context.Method}");
-
-                return handler(service, request, context.CancellationToken);
+                baseService.Context = context;
             }
-        }
+            else
+            {
+                throw new NotImplementedException($"Service type {typeof(TService)} must implement abstract class {typeof(RpcServiceBase)}");
+            }
 
-        return this;
+            this._logger.LogInformation($"Request gRPC endpoint: {context.Method}");
+
+            return handler(service, request, context.CancellationToken);
+        }
     }
 
     public IRpcHostBuilder AddClientStreamingMethod<TService, TRequest, TResponse>(
@@ -86,29 +85,28 @@ internal class GrpcHostBuilder : IRpcHostBuilder
 
         this._builder.AddMethod(method, ClientStreamingServerMethodDelegate);
 
-        // See delegate: ClientStreamingServerMethod<TRequest, TResponse>
+        return this;
+
+        // See delegate type: ClientStreamingServerMethod<TRequest, TResponse>
         Task<TResponse> ClientStreamingServerMethodDelegate(IAsyncStreamReader<TRequest> requestStream, ServerCallContext context)
         {
-            using ( var scope = this._serviceProvider.CreateScope() )
+            using var scope = this._serviceProvider.CreateScope();
+
+            var service = scope.ServiceProvider.GetServices<TService>().First(s => !s.GetType().Name.EndsWith("GrpcClientProxy", StringComparison.OrdinalIgnoreCase));
+            if ( service is RpcServiceBase baseService )
             {
-                var service = scope.ServiceProvider.GetServices<TService>().First(s => !s.GetType().Name.EndsWith("GrpcClientProxy", StringComparison.OrdinalIgnoreCase));
-                if ( service is RpcServiceBase baseService )
-                {
-                    baseService.Context = context;
-                    baseService.SetAsyncStreamReader(requestStream);
-                }
-                else
-                {
-                    throw new NotImplementedException($"Service type {typeof(TService)} must implement abstract class {typeof(RpcServiceBase)}");
-                }
-
-                this._logger.LogInformation($"Request gRPC endpoint: {context.Method}");
-
-                return handler(service, context.CancellationToken);
+                baseService.Context = context;
+                baseService.SetAsyncStreamReader(requestStream);
             }
-        }
+            else
+            {
+                throw new NotImplementedException($"Service type {typeof(TService)} must implement abstract class {typeof(RpcServiceBase)}");
+            }
 
-        return this;
+            this._logger.LogInformation($"Request gRPC endpoint: {context.Method}");
+
+            return handler(service, context.CancellationToken);
+        }
     }
 
     public IRpcHostBuilder AddServerStreamingMethod<TService, TRequest, TResponse>(
@@ -124,29 +122,28 @@ internal class GrpcHostBuilder : IRpcHostBuilder
 
         this._builder.AddMethod(method, ServerStreamingServerMethodDelegate);
 
-        // See delegate: ServerStreamingServerMethod<TRequest, TResponse>
+        return this;
+
+        // See delegate type: ServerStreamingServerMethod<TRequest, TResponse>
         Task ServerStreamingServerMethodDelegate(TRequest request, IServerStreamWriter<TResponse> responseStream, ServerCallContext context)
         {
-            using ( var scope = this._serviceProvider.CreateScope() )
+            using var scope = this._serviceProvider.CreateScope();
+
+            var service = scope.ServiceProvider.GetServices<TService>().First(s => !s.GetType().Name.EndsWith("GrpcClientProxy", StringComparison.OrdinalIgnoreCase));
+            if ( service is RpcServiceBase baseService )
             {
-                var service = scope.ServiceProvider.GetServices<TService>().First(s => !s.GetType().Name.EndsWith("GrpcClientProxy", StringComparison.OrdinalIgnoreCase));
-                if ( service is RpcServiceBase baseService )
-                {
-                    baseService.Context = context;
-                    baseService.SetServerStreamWriter(responseStream);
-                }
-                else
-                {
-                    throw new NotImplementedException($"Service type {typeof(TService)} must implement abstract class {typeof(RpcServiceBase)}");
-                }
-
-                this._logger.LogInformation($"Request gRPC endpoint: {context.Method}");
-
-                return handler(service, request, context.CancellationToken);
+                baseService.Context = context;
+                baseService.SetServerStreamWriter(responseStream);
             }
-        }
+            else
+            {
+                throw new NotImplementedException($"Service type {typeof(TService)} must implement abstract class {typeof(RpcServiceBase)}");
+            }
 
-        return this;
+            this._logger.LogInformation($"Request gRPC endpoint: {context.Method}");
+
+            return handler(service, request, context.CancellationToken);
+        }
     }
 
     public IRpcHostBuilder AddDuplexStreamingMethod<TService, TRequest, TResponse>(
@@ -162,30 +159,29 @@ internal class GrpcHostBuilder : IRpcHostBuilder
 
         this._builder.AddMethod(method, DuplexStreamingServerMethodDelegate);
 
-        // See delegate: DuplexStreamingServerMethod<TRequest, TResponse>
+        return this;
+
+        // See delegate type: DuplexStreamingServerMethod<TRequest, TResponse>
         Task DuplexStreamingServerMethodDelegate(IAsyncStreamReader<TRequest> requestStream, IServerStreamWriter<TResponse> responseStream, ServerCallContext context)
         {
-            using ( var scope = this._serviceProvider.CreateScope() )
+            using var scope = this._serviceProvider.CreateScope();
+
+            var service = scope.ServiceProvider.GetServices<TService>().First(s => !s.GetType().Name.EndsWith("GrpcClientProxy", StringComparison.OrdinalIgnoreCase));
+            if ( service is RpcServiceBase baseService )
             {
-                var service = scope.ServiceProvider.GetServices<TService>().First(s => !s.GetType().Name.EndsWith("GrpcClientProxy", StringComparison.OrdinalIgnoreCase));
-                if ( service is RpcServiceBase baseService )
-                {
-                    baseService.Context = context;
-                    baseService.SetAsyncStreamReader(requestStream);
-                    baseService.SetServerStreamWriter(responseStream);
-                }
-                else
-                {
-                    throw new NotImplementedException($"Service type {typeof(TService)} must implement abstract class {typeof(RpcServiceBase)}");
-                }
-
-                this._logger.LogInformation($"Request gRPC endpoint: {context.Method}");
-
-                return handler(service, context.CancellationToken);
+                baseService.Context = context;
+                baseService.SetAsyncStreamReader(requestStream);
+                baseService.SetServerStreamWriter(responseStream);
             }
-        }
+            else
+            {
+                throw new NotImplementedException($"Service type {typeof(TService)} must implement abstract class {typeof(RpcServiceBase)}");
+            }
 
-        return this;
+            this._logger.LogInformation($"Request gRPC endpoint: {context.Method}");
+
+            return handler(service, context.CancellationToken);
+        }
     }
 
     public IRpcHost Build()

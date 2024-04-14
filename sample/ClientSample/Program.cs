@@ -12,7 +12,7 @@ namespace ClientSample;
 
 class Program
 {
-    async static Task Main(string[] args)
+    static async Task Main(string[] args)
     {
         var configuration = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json", false, true)
@@ -30,19 +30,18 @@ class Program
         {
             Console.Write("Please input keyword:");
             var input = Console.ReadLine();
-            if ( input.Equals("Q", StringComparison.OrdinalIgnoreCase) )
+            if ( input!.Equals("Q", StringComparison.OrdinalIgnoreCase) )
             {
                 break;
             }
 
             if ( input.StartsWith("cs:", StringComparison.OrdinalIgnoreCase) )
             {
-                userRequest.Keyword = input;
                 var tokenSource = new CancellationTokenSource(1000 * 60 * 2);
                 var rpcChannel = provider.GetService<IRpcChannel>();
                 var call = rpcChannel.AsyncClientStreamingCall<UserDto, UserDto>("greet.Greeter", "TestClientStreaming", tokenSource.Token);
-                await call.RequestStream.WriteAsync(new UserDto { Id = 1, Name = "client[ClientStreaming]1" });
-                await call.RequestStream.WriteAsync(new UserDto { Id = 2, Name = "client[ClientStreaming]2" });
+                await call.RequestStream.WriteAsync(new UserDto { Id = 1, Name = $"client[ClientStreaming]1 - {input}" });
+                await call.RequestStream.WriteAsync(new UserDto { Id = 2, Name = $"client[ClientStreaming]2 - {input}" });
                 await call.RequestStream.CompleteAsync();
                 var userDto = await call;
 
