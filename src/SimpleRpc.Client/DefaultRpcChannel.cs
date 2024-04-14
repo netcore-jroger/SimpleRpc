@@ -33,7 +33,7 @@ public class DefaultRpcChannel : IRpcChannel
     {
         var callOptions = new CallOptions(cancellationToken: token).WithWaitForReady();
         var methodDefinition = this.GetMethodDefinition<TRequest, TResponse>(MethodType.Unary, serviceName, methodName);
-        using (var call = this._invoker.AsyncUnaryCall(methodDefinition, null, callOptions, request))
+        using ( var call = this._invoker.AsyncUnaryCall(methodDefinition, null, callOptions, request) )
         {
             var result = await call.ResponseAsync.ConfigureAwait(false);
 

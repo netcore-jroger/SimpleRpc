@@ -28,7 +28,7 @@ public class UserService : RpcServiceBase, IUserService
 
         return Task.FromResult(new UserDto {
             Id = (int)DateTime.Now.Ticks / 10000,
-            Name = Guid.NewGuid().ToString("D") + request.Keyword,
+            Name = $"{Guid.NewGuid():N} - {request.Keyword}",
             CreateDate = DateTime.Now
         });
     }
@@ -39,19 +39,19 @@ public class UserService : RpcServiceBase, IUserService
 
         while ( await requestStream.MoveNext(token).ConfigureAwait(false) )
         {
-            this._logger.LogInformation($"Receive client ClientStreaming message：{JsonSerializer.Serialize(requestStream.Current)}");
+            this._logger.LogInformation($"Receive client ClientStreaming message：{JsonSerializer.Serialize(requestStream.Current, _options)}");
         }
 
         return new UserDto {
             Id = (int)DateTime.Now.Ticks / 10000,
-            Name = Guid.NewGuid().ToString("D"),
+            Name = Guid.NewGuid().ToString("N"),
             CreateDate = DateTime.Now
         };
     }
 
     public async Task TestServerStreaming(UserRequest request, CancellationToken token = default)
     {
-        this._logger.LogInformation($"Receive client ServerStreaming message：{JsonSerializer.Serialize(request)}");
+        this._logger.LogInformation($"Receive client ServerStreaming message：{JsonSerializer.Serialize(request, _options)}");
 
         var responseStream = this.GetServerStreamWriter<UserDto>();
 
@@ -102,7 +102,7 @@ public class UserService : RpcServiceBase, IUserService
 
         while ( await requestStream.MoveNext(token).ConfigureAwait(false) )
         {
-            this._logger.LogInformation($"Receive client DuplexStreaming message：{JsonSerializer.Serialize(requestStream.Current)}");
+            this._logger.LogInformation($"Receive client DuplexStreaming message：{JsonSerializer.Serialize(requestStream.Current, _options)}");
         }
     }
 }

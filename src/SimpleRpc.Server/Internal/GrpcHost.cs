@@ -38,24 +38,24 @@ internal class GrpcHost : IRpcHost
     private void LogGrpcEndpoints(Type typeOfServer)
     {
         var fieldType = typeOfServer.GetField("callHandlers", BindingFlags.NonPublic | BindingFlags.Instance);
-        if (fieldType == null)
+        if ( fieldType is null )
         {
             this._logger.LogInformation("No gRPC endpoints found!");
             return;
         }
 
         var dict = fieldType.GetValue(this._server) as IDictionary;
-        if (dict is not null)
+        if ( dict is not null )
         {
             var builder = new StringBuilder();
             builder.AppendLine("------ gRPC Endpoints ------");
 
-            foreach (var endpoint in dict.Keys)
+            foreach ( var endpoint in dict.Keys )
             {
                 builder.AppendLine($"{endpoint}");
             }
 
-            this._logger.LogInformation(builder.ToString());
+            this._logger.LogInformation(message: builder.ToString());
         }
     }
 }

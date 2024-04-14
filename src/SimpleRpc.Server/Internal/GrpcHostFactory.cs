@@ -1,7 +1,6 @@
 // Copyright (c) JRoger. All Rights Reserved.
 
 using System;
-using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace SimpleRpc.Server.Internal;
@@ -14,7 +13,7 @@ internal static class GrpcHostFactory
         var builder = serviceProvider.GetRequiredService<IRpcHostBuilder>();
 
         //var rpcServices = rpcServiceTypeFinder.FindAllRpcServiceType();
-        
+
         //// var rpcServices = services.Where(sd => sd.ServiceType.GetCustomAttribute<GrpcServiceAttribute>().IsNotNull());
         //if (rpcServices.Any())
         //{
@@ -29,7 +28,7 @@ internal static class GrpcHostFactory
         //}
 
         var rpcServiceDescriptions = rpcServiceTypeFinder.GetAllRpcServiceDescription();
-        if (rpcServiceDescriptions.Any())
+        if ( rpcServiceDescriptions.Count > 0 )
         {
             builder.RegisterRpcService(rpcServiceDescriptions);
         }

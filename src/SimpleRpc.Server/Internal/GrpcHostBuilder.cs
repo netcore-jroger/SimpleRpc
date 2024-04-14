@@ -59,6 +59,10 @@ internal class GrpcHostBuilder : IRpcHostBuilder
                 {
                     baseService.Context = context;
                 }
+                else
+                {
+                    throw new NotImplementedException($"Service type {typeof(TService)} must implement abstract class {typeof(RpcServiceBase)}");
+                }
 
                 this._logger.LogInformation($"Request gRPC endpoint: {context.Method}");
 
@@ -93,6 +97,10 @@ internal class GrpcHostBuilder : IRpcHostBuilder
                     baseService.Context = context;
                     baseService.SetAsyncStreamReader(requestStream);
                 }
+                else
+                {
+                    throw new NotImplementedException($"Service type {typeof(TService)} must implement abstract class {typeof(RpcServiceBase)}");
+                }
 
                 this._logger.LogInformation($"Request gRPC endpoint: {context.Method}");
 
@@ -126,6 +134,10 @@ internal class GrpcHostBuilder : IRpcHostBuilder
                 {
                     baseService.Context = context;
                     baseService.SetServerStreamWriter(responseStream);
+                }
+                else
+                {
+                    throw new NotImplementedException($"Service type {typeof(TService)} must implement abstract class {typeof(RpcServiceBase)}");
                 }
 
                 this._logger.LogInformation($"Request gRPC endpoint: {context.Method}");
@@ -162,6 +174,10 @@ internal class GrpcHostBuilder : IRpcHostBuilder
                     baseService.SetAsyncStreamReader(requestStream);
                     baseService.SetServerStreamWriter(responseStream);
                 }
+                else
+                {
+                    throw new NotImplementedException($"Service type {typeof(TService)} must implement abstract class {typeof(RpcServiceBase)}");
+                }
 
                 this._logger.LogInformation($"Request gRPC endpoint: {context.Method}");
 
@@ -186,6 +202,6 @@ internal class GrpcHostBuilder : IRpcHostBuilder
             }
         };
 
-        return new GrpcHost(server, _loggerFactory);
+        return new GrpcHost(server, this._loggerFactory);
     }
 }
