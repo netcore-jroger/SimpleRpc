@@ -1,4 +1,6 @@
-﻿using System;
+// Copyright (c) JRoger. All Rights Reserved.
+
+using System;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;

@@ -1,4 +1,6 @@
-﻿using Grpc.Core;
+// Copyright (c) JRoger. All Rights Reserved.
+
+using Grpc.Core;
 using SimpleRpc.Shared.Serializers;
 using System.Runtime.CompilerServices;
 

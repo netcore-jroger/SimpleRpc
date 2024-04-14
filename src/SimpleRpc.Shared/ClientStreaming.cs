@@ -1,4 +1,6 @@
-﻿using System;
+// Copyright (c) JRoger. All Rights Reserved.
+
+using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Grpc.Core;

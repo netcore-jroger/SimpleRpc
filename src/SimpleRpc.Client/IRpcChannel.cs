@@ -1,3 +1,5 @@
+// Copyright (c) JRoger. All Rights Reserved.
+
 using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;

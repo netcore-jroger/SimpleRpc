@@ -1,4 +1,6 @@
-﻿using System;
+// Copyright (c) JRoger. All Rights Reserved.
+
+using System;
 using System.Text.Json;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;

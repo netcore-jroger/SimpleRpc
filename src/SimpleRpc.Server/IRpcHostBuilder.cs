@@ -1,3 +1,5 @@
+// Copyright (c) JRoger. All Rights Reserved.
+
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -45,6 +47,16 @@ public interface IRpcHostBuilder
         where TRequest : class
         where TResponse : class;
 
+    /// <summary>
+    /// 添加 ServerStreamingMethod RPC 方法
+    /// </summary>
+    /// <typeparam name="TService"></typeparam>
+    /// <typeparam name="TRequest"></typeparam>
+    /// <typeparam name="TResponse"></typeparam>
+    /// <param name="handler"></param>
+    /// <param name="serviceName"></param>
+    /// <param name="methodName"></param>
+    /// <returns></returns>
     IRpcHostBuilder AddServerStreamingMethod<TService, TRequest, TResponse>(
         Func<TService, TRequest, CancellationToken, Task> handler,
         string serviceName,

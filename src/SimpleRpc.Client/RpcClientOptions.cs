@@ -1,4 +1,6 @@
-﻿namespace SimpleRpc.Client;
+// Copyright (c) JRoger. All Rights Reserved.
+
+namespace SimpleRpc.Client;
 
 public class RpcClientOptions
 {

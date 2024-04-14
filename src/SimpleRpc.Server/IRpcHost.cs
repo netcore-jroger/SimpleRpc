@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+// Copyright (c) JRoger. All Rights Reserved.
+
+using System.Threading.Tasks;
 
 namespace SimpleRpc.Server;
 

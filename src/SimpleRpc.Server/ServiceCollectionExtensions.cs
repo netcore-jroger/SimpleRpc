@@ -1,11 +1,13 @@
-﻿using System;
+// Copyright (c) JRoger. All Rights Reserved.
+
+using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using SimpleRpc.Shared.Serializers;
 using SimpleRpc.Server.Internal;
+using SimpleRpc.Shared.Serializers;
 
 namespace SimpleRpc.Server;
 
