@@ -1,4 +1,6 @@
-﻿using System;
+// Copyright (c) JRoger. All Rights Reserved.
+
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
@@ -16,6 +18,9 @@ namespace InterfaceLib
 
         [RpcMethod(MethodType = MethodType.ClientStreaming, RequestDataType = typeof(UserDto))]
         Task<UserDto> TestClientStreaming(CancellationToken token = default);
+
+        [RpcMethod(MethodType = MethodType.ServerStreaming, RequestDataType = typeof(UserRequest), ResponseDataType = typeof(UserDto))]
+        Task TestServerStreaming(UserRequest request, CancellationToken token = default);
     }
 
     [ProtoContract]

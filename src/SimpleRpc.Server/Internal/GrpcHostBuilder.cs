@@ -1,4 +1,6 @@
-﻿using System;
+// Copyright (c) JRoger. All Rights Reserved.
+
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,16 +22,18 @@ internal class GrpcHostBuilder : IRpcHostBuilder
     private readonly IServiceProvider _serviceProvider;
     private readonly ServerServiceDefinition.Builder _builder;
     private readonly ISerializer _serializer;
-    private readonly ILoggerFactory loggerFactory;
     private readonly RpcServerOptions _options;
+    private readonly ILoggerFactory _loggerFactory;
+    private readonly ILogger<GrpcHostBuilder> _logger;
 
     public GrpcHostBuilder(IServiceProvider serviceProvider, ISerializer serializer, IOptions<RpcServerOptions> options, ILoggerFactory loggerFactory)
     {
         this._serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         this._builder = ServerServiceDefinition.CreateBuilder();
         this._serializer = serializer;
-        this.loggerFactory = loggerFactory;
         this._options = options.Value;
+        this._loggerFactory = loggerFactory;
+        this._logger = loggerFactory.CreateLogger<GrpcHostBuilder>();
     }
 
     public IRpcHostBuilder AddUnaryMethod<TService, TRequest, TResponse> (
@@ -51,6 +55,9 @@ internal class GrpcHostBuilder : IRpcHostBuilder
                     {
                         baseService.Context = context;
                     }
+
+                    this._logger.LogInformation($"Request gRPC endpoint: {context.Method}");
+
                     return handler(service, request, context.CancellationToken);
                 }
             }
@@ -81,10 +88,46 @@ internal class GrpcHostBuilder : IRpcHostBuilder
                         baseService.Context = context;
                         baseService.SetAsyncStreamReader(requestStream);
                     }
+
+                    this._logger.LogInformation($"Request gRPC endpoint: {context.Method}");
+
                     return handler(service, context.CancellationToken);
                 }
             }
         );
+
+        return this;
+    }
+
+    public IRpcHostBuilder AddServerStreamingMethod<TService, TRequest, TResponse>(
+        Func<TService, TRequest, CancellationToken, Task> handler,
+        string serviceName,
+        string methodName
+    )
+        where TService : class, IRpcService
+        where TRequest : class
+        where TResponse : class
+    {
+        var method = MethodDefinitionGenerator.CreateMethodDefinition<TRequest, TResponse>(MethodType.ServerStreaming, serviceName, methodName, this._serializer);
+
+        this._builder.AddMethod(method, LocalServerStreamingServerMethod);
+
+        Task LocalServerStreamingServerMethod(TRequest request, IServerStreamWriter<TResponse> responseStream, ServerCallContext context)
+        {
+            using (var scope = this._serviceProvider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetServices<TService>().First(s => !s.GetType().Name.EndsWith("GrpcClientProxy", StringComparison.OrdinalIgnoreCase));
+                if (service is RpcServiceBase baseService)
+                {
+                    baseService.Context = context;
+                    baseService.SetServerStreamWriter(responseStream);
+                }
+
+                this._logger.LogInformation($"Request gRPC endpoint: {context.Method}");
+
+                return handler(service, request, context.CancellationToken);
+            }
+        }
 
         return this;
     }
@@ -103,6 +146,6 @@ internal class GrpcHostBuilder : IRpcHostBuilder
             }
         };
 
-        return new GrpcHost(server, loggerFactory);
+        return new GrpcHost(server, _loggerFactory);
     }
 }

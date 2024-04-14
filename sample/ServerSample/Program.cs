@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore;
+// Copyright (c) JRoger. All Rights Reserved.
+
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 
 namespace ServerSample;

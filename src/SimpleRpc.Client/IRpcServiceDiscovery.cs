@@ -1,3 +1,5 @@
+// Copyright (c) JRoger. All Rights Reserved.
+
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 

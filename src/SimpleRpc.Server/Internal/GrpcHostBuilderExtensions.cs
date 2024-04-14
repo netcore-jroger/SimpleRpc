@@ -1,3 +1,5 @@
+// Copyright (c) JRoger. All Rights Reserved.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,6 +23,10 @@ internal static class GrpcHostBuilderExtensions
     private static readonly MethodInfo _clientStreamingHandlerGenerator = typeof(MethodHandlerGenerator).GetMethod(nameof(MethodHandlerGenerator.GenerateClientStreamingMethodHandler));
     private static readonly MethodInfo _addClientStreamingMethod = typeof(GrpcHostBuilder).GetMethod(nameof(GrpcHostBuilder.AddClientStreamingMethod), BindingFlags.Public | BindingFlags.Instance);
 
+    // ServerStreaming
+    private static readonly MethodInfo _serverStreamingHandlerGenerator = typeof(MethodHandlerGenerator).GetMethod(nameof(MethodHandlerGenerator.GenerateServerStreamingMethodHandler));
+    private static readonly MethodInfo _addServerStreamingMethod = typeof(GrpcHostBuilder).GetMethod(nameof(GrpcHostBuilder.AddServerStreamingMethod), BindingFlags.Public | BindingFlags.Instance);
+
     public static IRpcHostBuilder RegisterRpcService(this IRpcHostBuilder builder, List<RpcServiceDescription> rpcServiceDescriptions)
     {
         if (rpcServiceDescriptions.Count == 0)
@@ -33,26 +39,39 @@ internal static class GrpcHostBuilderExtensions
             foreach (var rpcMethodDescription in rpcServiceDescription.RpcMethods)
             {
                 var requestType = rpcMethodDescription.RpcMethod.GetParameters()[0].ParameterType;
-                var responseType = rpcMethodDescription.RpcMethod.ReturnType.GenericTypeArguments[0];
 
                 switch (rpcMethodDescription.RpcMethodType)
                 {
                     case MethodType.Unary:
-                        var unaryHandlerGenerator = _unaryHandlerGenerator.MakeGenericMethod(rpcServiceDescription.RpcServiceType, requestType, responseType);
+                        var unaryResponseType = rpcMethodDescription.RpcMethod.ReturnType.GenericTypeArguments[0];
+                        var unaryHandlerGenerator = _unaryHandlerGenerator.MakeGenericMethod(rpcServiceDescription.RpcServiceType, requestType, unaryResponseType);
                         var unaryHandler = unaryHandlerGenerator.Invoke(null, new[] { rpcMethodDescription.RpcMethod });
 
-                        var addUnaryMethod = _addUnaryMethod.MakeGenericMethod(rpcServiceDescription.RpcServiceType, requestType, responseType);
+                        var addUnaryMethod = _addUnaryMethod.MakeGenericMethod(rpcServiceDescription.RpcServiceType, requestType, unaryResponseType);
                         addUnaryMethod.Invoke(builder, new[] { unaryHandler, rpcServiceDescription.RpcServiceName, rpcMethodDescription.RpcMethodName });
                         break;
 
                     case MethodType.ClientStreaming:
+                        var clientStreamingResponseType = rpcMethodDescription.RpcMethod.ReturnType.GenericTypeArguments[0];
                         // Func<TService, CancellationToken, Task<TResponse>>
-                        var clientStreamingHandlerGenerator = _clientStreamingHandlerGenerator.MakeGenericMethod(rpcServiceDescription.RpcServiceType, responseType);
+                        var clientStreamingHandlerGenerator = _clientStreamingHandlerGenerator.MakeGenericMethod(rpcServiceDescription.RpcServiceType, clientStreamingResponseType);
                         var clientStreamingHandler = clientStreamingHandlerGenerator.Invoke(null, new[] { rpcMethodDescription.RpcMethod });
 
-                        var addClientStreamingMethod = _addClientStreamingMethod.MakeGenericMethod(rpcServiceDescription.RpcServiceType, rpcMethodDescription.RequestDataType, responseType);
+                        var addClientStreamingMethod = _addClientStreamingMethod.MakeGenericMethod(rpcServiceDescription.RpcServiceType, rpcMethodDescription.RequestDataType, clientStreamingResponseType);
                         addClientStreamingMethod.Invoke(builder, new[] { clientStreamingHandler, rpcServiceDescription.RpcServiceName, rpcMethodDescription.RpcMethodName });
                         break;
+
+                    case MethodType.ServerStreaming:
+                        // Func<TService, TRequest, CancellationToken, Task>
+                        var serverStreamingHandlerGenerator = _serverStreamingHandlerGenerator.MakeGenericMethod(rpcServiceDescription.RpcServiceType, rpcMethodDescription.RequestDataType);
+                        var serverStreamingHandler = serverStreamingHandlerGenerator.Invoke(null, new[] { rpcMethodDescription.RpcMethod });
+
+                        var addServerStreamingMethod = _addServerStreamingMethod.MakeGenericMethod(rpcServiceDescription.RpcServiceType, rpcMethodDescription.RequestDataType, rpcMethodDescription.ResponseDataType);
+                        addServerStreamingMethod.Invoke(builder, new[] { serverStreamingHandler, rpcServiceDescription.RpcServiceName, rpcMethodDescription.RpcMethodName });
+                        break;
+
+                    default:
+                        throw new NotSupportedException($"unsupport gRPC MethodType: {rpcMethodDescription.RpcMethodType}");
                 }
             }
         }

@@ -1,4 +1,6 @@
-﻿using System;
+// Copyright (c) JRoger. All Rights Reserved.
+
+using System;
 using Grpc.Core;
 
 namespace SimpleRpc.Shared.ServiceAnnotations
@@ -11,6 +13,8 @@ namespace SimpleRpc.Shared.ServiceAnnotations
         public MethodType MethodType { get; set; }
 
         public Type RequestDataType { get; set; }
+
+        public Type ResponseDataType { get; set; }
 
         public RpcMethodAttribute(string name = "")
         {

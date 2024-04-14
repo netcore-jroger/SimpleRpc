@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
+// Copyright (c) JRoger. All Rights Reserved.
+
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using SimpleRpc.Shared.Serializers;

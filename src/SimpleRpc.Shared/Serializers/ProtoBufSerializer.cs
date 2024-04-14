@@ -1,4 +1,6 @@
-﻿using ProtoBuf;
+// Copyright (c) JRoger. All Rights Reserved.
+
+using ProtoBuf;
 using System.IO;
 
 namespace SimpleRpc.Shared.Serializers

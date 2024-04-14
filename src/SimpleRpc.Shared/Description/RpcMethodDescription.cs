@@ -1,4 +1,6 @@
-﻿using System;
+// Copyright (c) JRoger. All Rights Reserved.
+
+using System;
 using System.Reflection;
 using System.Threading;
 using Grpc.Core;
@@ -10,11 +12,12 @@ namespace SimpleRpc.Shared.Description
     {
         public RpcMethodDescription(MethodInfo methodInfo)
         {
-            var (rpcMethodName, methodType, requestDataType) = GetRpcMethodInfo(methodInfo);
+            var (rpcMethodName, methodType, requestDataType, responseDataType) = GetRpcMethodInfo(methodInfo);
             this.RpcMethod = methodInfo;
             this.RpcMethodName = rpcMethodName;
             this.RpcMethodType = methodType;
             this.RequestDataType = requestDataType;
+            this.ResponseDataType = responseDataType;
 
             this.CheckRpcMethodParameterType(methodInfo);
         }
@@ -27,14 +30,17 @@ namespace SimpleRpc.Shared.Description
 
         public Type RequestDataType { get; }
 
-        private static (string rpcMethodName, MethodType methodType, Type requestDataType) GetRpcMethodInfo(MethodInfo methodInfo)
+        public Type ResponseDataType { get; }
+
+        private static (string rpcMethodName, MethodType methodType, Type requestDataType, Type responseDataType) GetRpcMethodInfo(MethodInfo methodInfo)
         {
             var attr = methodInfo.GetCustomAttribute(typeof(RpcMethodAttribute), true) as RpcMethodAttribute;
 
             return (
                 string.IsNullOrWhiteSpace(attr.Name) ? methodInfo.Name : attr.Name,
                 attr.MethodType,
-                attr.RequestDataType
+                attr.RequestDataType,
+                attr.ResponseDataType
             );
         }
 

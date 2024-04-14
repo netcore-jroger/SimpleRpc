@@ -1,4 +1,6 @@
-﻿namespace SimpleRpc.Shared.Serializers
+// Copyright (c) JRoger. All Rights Reserved.
+
+namespace SimpleRpc.Shared.Serializers
 {
     public interface ISerializer
     {

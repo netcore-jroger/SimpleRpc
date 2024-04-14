@@ -1,3 +1,5 @@
+// Copyright (c) JRoger. All Rights Reserved.
+
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -46,6 +48,17 @@ public class DefaultRpcChannel : IRpcChannel
         var callOptions = new CallOptions(cancellationToken: token).WithWaitForReady();
         var methodDefinition = this.GetMethodDefinition<TRequest, TResponse>(MethodType.ClientStreaming, serviceName, methodName);
         var result = this._invoker.AsyncClientStreamingCall<TRequest, TResponse>(methodDefinition, this._host, callOptions);
+
+        return result;
+    }
+
+    public AsyncServerStreamingCall<TResponse> AsyncServerStreamingCall<TRequest, TResponse>(string serviceName, string methodName, TRequest request, CancellationToken token)
+        where TRequest : class
+        where TResponse : class
+    {
+        var callOptions = new CallOptions(cancellationToken: token).WithWaitForReady();
+        var methodDefinition = this.GetMethodDefinition<TRequest, TResponse>(MethodType.ServerStreaming, serviceName, methodName);
+        var result = this._invoker.AsyncServerStreamingCall<TRequest, TResponse>(methodDefinition, this._host, callOptions, request);
 
         return result;
     }

@@ -1,4 +1,6 @@
-﻿using System;
+// Copyright (c) JRoger. All Rights Reserved.
+
+using System;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
@@ -32,6 +34,20 @@ internal static class MethodHandlerGenerator
         var invocation = Expression.Call(serviceParameter, method, new[] { ctParameter });
         var func = Expression.Lambda<Func<TService, CancellationToken, Task<TResponse>>>(
             invocation, false, new[] { serviceParameter, ctParameter }
+        )
+        .Compile();
+
+        return func;
+    }
+
+    public static Func<TService, TRequest, CancellationToken, Task> GenerateServerStreamingMethodHandler<TService, TRequest>(MethodInfo method)
+    {
+        var serviceParameter = Expression.Parameter(typeof(TService));
+        var requestParameter = Expression.Parameter(typeof(TRequest));
+        var ctParameter = Expression.Parameter(typeof(CancellationToken));
+        var invocation = Expression.Call(serviceParameter, method, new[] { requestParameter, ctParameter });
+        var func = Expression.Lambda<Func<TService, TRequest, CancellationToken, Task>>(
+            invocation, false, new[] { serviceParameter, requestParameter, ctParameter }
         )
         .Compile();
 

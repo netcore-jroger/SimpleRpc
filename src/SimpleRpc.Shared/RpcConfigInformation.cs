@@ -1,4 +1,6 @@
-﻿namespace SimpleRpc.Shared
+// Copyright (c) JRoger. All Rights Reserved.
+
+namespace SimpleRpc.Shared
 {
     public static class RpcConfigInformation
     {

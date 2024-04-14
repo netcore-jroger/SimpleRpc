@@ -1,4 +1,6 @@
-﻿namespace SimpleRpc.Server;
+// Copyright (c) JRoger. All Rights Reserved.
+
+namespace SimpleRpc.Server;
 
 public class RpcServerOptions
 {
