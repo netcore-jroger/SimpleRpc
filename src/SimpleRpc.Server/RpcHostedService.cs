@@ -26,22 +26,22 @@ internal class RpcHostedService : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        this._logger.LogInformation("------ Starting RPC hosted service. ------");
+        this._logger.LogInformation("------ Starting RPC host service. ------");
 
         await this._host.StartAsync().ConfigureAwait(false);
 
-        this._logger.LogInformation($"------ RPC hosted service started at 0.0.0.0:{this._options.Port}. ------");
-        
+        this._logger.LogInformation($"------ RPC host service started at 0.0.0.0:{this._options.Port}. ------");
+
         await this._rpcServiceRegister.RegisterAsync();
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
-        this._logger.LogInformation("------ Stopping RPC hosted service. ------");
+        this._logger.LogInformation("------ Stopping RPC host service. ------");
 
         await this._host.StopAsync().ConfigureAwait(false);
 
-        this._logger.LogInformation("------ RPC hosted service stoped. ------");
+        this._logger.LogInformation("------ RPC host service stoped. ------");
 
         await this._rpcServiceRegister.UnregisterAsync();
     }

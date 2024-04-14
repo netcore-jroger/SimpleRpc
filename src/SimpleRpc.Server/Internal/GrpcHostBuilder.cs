@@ -36,7 +36,7 @@ internal class GrpcHostBuilder : IRpcHostBuilder
         this._logger = loggerFactory.CreateLogger<GrpcHostBuilder>();
     }
 
-    public IRpcHostBuilder AddUnaryMethod<TService, TRequest, TResponse> (
+    public IRpcHostBuilder AddUnaryMethod<TService, TRequest, TResponse>(
         Func<TService, TRequest, CancellationToken, Task<TResponse>> handler,
         string serviceName,
         string methodName
@@ -45,28 +45,31 @@ internal class GrpcHostBuilder : IRpcHostBuilder
         where TRequest : class
         where TResponse : class
     {
-        this._builder.AddMethod(
-            MethodDefinitionGenerator.CreateMethodDefinition<TRequest, TResponse>(MethodType.Unary, serviceName, methodName, this._serializer),
-            (request, context) => {
-                using (var scope = this._serviceProvider.CreateScope())
+        var method = MethodDefinitionGenerator.CreateMethodDefinition<TRequest, TResponse>(MethodType.Unary, serviceName, methodName, this._serializer);
+
+        this._builder.AddMethod(method, UnaryServerMethodDelegate);
+
+        // See delegate: UnaryServerMethod<TRequest, TResponse>
+        Task<TResponse> UnaryServerMethodDelegate(TRequest request, ServerCallContext context)
+        {
+            using ( var scope = this._serviceProvider.CreateScope() )
+            {
+                var service = scope.ServiceProvider.GetServices<TService>().First(s => !s.GetType().Name.EndsWith("GrpcClientProxy", StringComparison.OrdinalIgnoreCase));
+                if ( service is RpcServiceBase baseService )
                 {
-                    var service = scope.ServiceProvider.GetServices<TService>().First(s => !s.GetType().Name.EndsWith("GrpcClientProxy", StringComparison.OrdinalIgnoreCase));
-                    if (service is RpcServiceBase baseService)
-                    {
-                        baseService.Context = context;
-                    }
-
-                    this._logger.LogInformation($"Request gRPC endpoint: {context.Method}");
-
-                    return handler(service, request, context.CancellationToken);
+                    baseService.Context = context;
                 }
+
+                this._logger.LogInformation($"Request gRPC endpoint: {context.Method}");
+
+                return handler(service, request, context.CancellationToken);
             }
-        );
+        }
 
         return this;
     }
 
-    public IRpcHostBuilder AddClientStreamingMethod<TService, TRequest, TResponse> (
+    public IRpcHostBuilder AddClientStreamingMethod<TService, TRequest, TResponse>(
         Func<TService, CancellationToken, Task<TResponse>> handler,
         string serviceName,
         string methodName
@@ -77,24 +80,25 @@ internal class GrpcHostBuilder : IRpcHostBuilder
     {
         var method = MethodDefinitionGenerator.CreateMethodDefinition<TRequest, TResponse>(MethodType.ClientStreaming, serviceName, methodName, this._serializer);
 
-        this._builder.AddMethod(
-            method,
-            (requestStream, context) => {
-                using (var scope = this._serviceProvider.CreateScope())
+        this._builder.AddMethod(method, ClientStreamingServerMethodDelegate);
+
+        // See delegate: ClientStreamingServerMethod<TRequest, TResponse>
+        Task<TResponse> ClientStreamingServerMethodDelegate(IAsyncStreamReader<TRequest> requestStream, ServerCallContext context)
+        {
+            using ( var scope = this._serviceProvider.CreateScope() )
+            {
+                var service = scope.ServiceProvider.GetServices<TService>().First(s => !s.GetType().Name.EndsWith("GrpcClientProxy", StringComparison.OrdinalIgnoreCase));
+                if ( service is RpcServiceBase baseService )
                 {
-                    var service = scope.ServiceProvider.GetServices<TService>().First(s => !s.GetType().Name.EndsWith("GrpcClientProxy", StringComparison.OrdinalIgnoreCase));
-                    if (service is RpcServiceBase baseService)
-                    {
-                        baseService.Context = context;
-                        baseService.SetAsyncStreamReader(requestStream);
-                    }
-
-                    this._logger.LogInformation($"Request gRPC endpoint: {context.Method}");
-
-                    return handler(service, context.CancellationToken);
+                    baseService.Context = context;
+                    baseService.SetAsyncStreamReader(requestStream);
                 }
+
+                this._logger.LogInformation($"Request gRPC endpoint: {context.Method}");
+
+                return handler(service, context.CancellationToken);
             }
-        );
+        }
 
         return this;
     }
@@ -110,14 +114,15 @@ internal class GrpcHostBuilder : IRpcHostBuilder
     {
         var method = MethodDefinitionGenerator.CreateMethodDefinition<TRequest, TResponse>(MethodType.ServerStreaming, serviceName, methodName, this._serializer);
 
-        this._builder.AddMethod(method, LocalServerStreamingServerMethod);
+        this._builder.AddMethod(method, ServerStreamingServerMethodDelegate);
 
-        Task LocalServerStreamingServerMethod(TRequest request, IServerStreamWriter<TResponse> responseStream, ServerCallContext context)
+        // See delegate: ServerStreamingServerMethod<TRequest, TResponse>
+        Task ServerStreamingServerMethodDelegate(TRequest request, IServerStreamWriter<TResponse> responseStream, ServerCallContext context)
         {
-            using (var scope = this._serviceProvider.CreateScope())
+            using ( var scope = this._serviceProvider.CreateScope() )
             {
                 var service = scope.ServiceProvider.GetServices<TService>().First(s => !s.GetType().Name.EndsWith("GrpcClientProxy", StringComparison.OrdinalIgnoreCase));
-                if (service is RpcServiceBase baseService)
+                if ( service is RpcServiceBase baseService )
                 {
                     baseService.Context = context;
                     baseService.SetServerStreamWriter(responseStream);
@@ -126,6 +131,41 @@ internal class GrpcHostBuilder : IRpcHostBuilder
                 this._logger.LogInformation($"Request gRPC endpoint: {context.Method}");
 
                 return handler(service, request, context.CancellationToken);
+            }
+        }
+
+        return this;
+    }
+
+    public IRpcHostBuilder AddDuplexStreamingMethod<TService, TRequest, TResponse>(
+        Func<TService, CancellationToken, Task> handler,
+        string serviceName,
+        string methodName
+    )
+        where TService : class, IRpcService
+        where TRequest : class
+        where TResponse : class
+    {
+        var method = MethodDefinitionGenerator.CreateMethodDefinition<TRequest, TResponse>(MethodType.DuplexStreaming, serviceName, methodName, this._serializer);
+
+        this._builder.AddMethod(method, DuplexStreamingServerMethodDelegate);
+
+        // See delegate: DuplexStreamingServerMethod<TRequest, TResponse>
+        Task DuplexStreamingServerMethodDelegate(IAsyncStreamReader<TRequest> requestStream, IServerStreamWriter<TResponse> responseStream, ServerCallContext context)
+        {
+            using ( var scope = this._serviceProvider.CreateScope() )
+            {
+                var service = scope.ServiceProvider.GetServices<TService>().First(s => !s.GetType().Name.EndsWith("GrpcClientProxy", StringComparison.OrdinalIgnoreCase));
+                if ( service is RpcServiceBase baseService )
+                {
+                    baseService.Context = context;
+                    baseService.SetAsyncStreamReader(requestStream);
+                    baseService.SetServerStreamWriter(responseStream);
+                }
+
+                this._logger.LogInformation($"Request gRPC endpoint: {context.Method}");
+
+                return handler(service, context.CancellationToken);
             }
         }
 

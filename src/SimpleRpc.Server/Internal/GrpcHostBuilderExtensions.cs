@@ -27,20 +27,24 @@ internal static class GrpcHostBuilderExtensions
     private static readonly MethodInfo _serverStreamingHandlerGenerator = typeof(MethodHandlerGenerator).GetMethod(nameof(MethodHandlerGenerator.GenerateServerStreamingMethodHandler));
     private static readonly MethodInfo _addServerStreamingMethod = typeof(GrpcHostBuilder).GetMethod(nameof(GrpcHostBuilder.AddServerStreamingMethod), BindingFlags.Public | BindingFlags.Instance);
 
+    // DuplexStreaming
+    private static readonly MethodInfo _duplexStreamingHandlerGenerator = typeof(MethodHandlerGenerator).GetMethod(nameof(MethodHandlerGenerator.GenerateDuplexStreamingMethodHandler));
+    private static readonly MethodInfo _addDuplexStreamingMethod = typeof(GrpcHostBuilder).GetMethod(nameof(GrpcHostBuilder.AddDuplexStreamingMethod), BindingFlags.Public | BindingFlags.Instance);
+
     public static IRpcHostBuilder RegisterRpcService(this IRpcHostBuilder builder, List<RpcServiceDescription> rpcServiceDescriptions)
     {
-        if (rpcServiceDescriptions.Count == 0)
+        if ( rpcServiceDescriptions.Count == 0 )
         {
             return builder;
         }
 
-        foreach (var rpcServiceDescription in rpcServiceDescriptions)
+        foreach ( var rpcServiceDescription in rpcServiceDescriptions )
         {
-            foreach (var rpcMethodDescription in rpcServiceDescription.RpcMethods)
+            foreach ( var rpcMethodDescription in rpcServiceDescription.RpcMethods )
             {
                 var requestType = rpcMethodDescription.RpcMethod.GetParameters()[0].ParameterType;
 
-                switch (rpcMethodDescription.RpcMethodType)
+                switch ( rpcMethodDescription.RpcMethodType )
                 {
                     case MethodType.Unary:
                         var unaryResponseType = rpcMethodDescription.RpcMethod.ReturnType.GenericTypeArguments[0];
@@ -70,6 +74,15 @@ internal static class GrpcHostBuilderExtensions
                         addServerStreamingMethod.Invoke(builder, new[] { serverStreamingHandler, rpcServiceDescription.RpcServiceName, rpcMethodDescription.RpcMethodName });
                         break;
 
+                    case MethodType.DuplexStreaming:
+                        // Func<TService, CancellationToken, Task>
+                        var duplexStreamingHandlerGenerator = _duplexStreamingHandlerGenerator.MakeGenericMethod(rpcServiceDescription.RpcServiceType, rpcMethodDescription.ResponseDataType);
+                        var duplexStreamingHandler = duplexStreamingHandlerGenerator.Invoke(null, new[] { rpcMethodDescription.RpcMethod });
+
+                        var addDuplexStreamingMethod = _addDuplexStreamingMethod.MakeGenericMethod(rpcServiceDescription.RpcServiceType, rpcMethodDescription.RequestDataType, rpcMethodDescription.ResponseDataType);
+                        addDuplexStreamingMethod.Invoke(builder, new[] { duplexStreamingHandler, rpcServiceDescription.RpcServiceName, rpcMethodDescription.RpcMethodName });
+                        break;
+
                     default:
                         throw new NotSupportedException($"unsupport gRPC MethodType: {rpcMethodDescription.RpcMethodType}");
                 }
@@ -82,12 +95,12 @@ internal static class GrpcHostBuilderExtensions
     public static IRpcHostBuilder AddUnaryMethods(this IRpcHostBuilder builder, Type serviceType)
     {
         var serviceName = ((RpcServiceAttribute)serviceType.GetCustomAttribute(typeof(RpcServiceAttribute)))?.Name;
-        if (string.IsNullOrWhiteSpace(serviceName))
+        if ( string.IsNullOrWhiteSpace(serviceName) )
         {
             serviceName = serviceType.Name;
         }
 
-        foreach (var method in serviceType.GetMethods().Where(_ => _.GetCustomAttribute(typeof(RpcMethodAttribute), true) != null))
+        foreach ( var method in serviceType.GetMethods().Where(_ => _.GetCustomAttribute(typeof(RpcMethodAttribute), true) != null) )
         {
             CheckRpcMethodParameterType(method);
 
@@ -109,9 +122,12 @@ internal static class GrpcHostBuilderExtensions
     public static IRpcHostBuilder AddClientStreamingMethods(this IRpcHostBuilder builder, Type serviceType)
     {
         var serviceName = ((RpcServiceAttribute)serviceType.GetCustomAttribute(typeof(RpcServiceAttribute)))?.Name;
-        if (string.IsNullOrWhiteSpace(serviceName)) serviceName = serviceType.Name;
+        if ( string.IsNullOrWhiteSpace(serviceName) )
+        {
+            serviceName = serviceType.Name;
+        }
 
-        foreach (var method in serviceType.GetMethods().Where(_ => _.GetCustomAttribute(typeof(RpcMethodAttribute), true) != null))
+        foreach ( var method in serviceType.GetMethods().Where(_ => _.GetCustomAttribute(typeof(RpcMethodAttribute), true) != null) )
         {
             CheckRpcMethodParameterType(method);
 
@@ -134,7 +150,10 @@ internal static class GrpcHostBuilderExtensions
     private static string GetMethodName(MethodInfo method)
     {
         var methodName = ((RpcMethodAttribute)method.GetCustomAttribute(typeof(RpcMethodAttribute)))?.Name;
-        if (string.IsNullOrWhiteSpace(methodName)) methodName = method.Name;
+        if ( string.IsNullOrWhiteSpace(methodName) )
+        {
+            methodName = method.Name;
+        }
 
         return methodName;
     }
@@ -142,17 +161,17 @@ internal static class GrpcHostBuilderExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void CheckRpcMethodParameterType(MethodInfo method)
     {
-        if (method.ReturnType.GenericTypeArguments.Length != 1)
+        if ( method.ReturnType.GenericTypeArguments.Length != 1 )
         {
             throw new RpcDefineException("The return value type of RPC method must be Task<T>.");
         }
 
-        if (method.GetParameters().Length != 2)
+        if ( method.GetParameters().Length != 2 )
         {
             throw new RpcDefineException("The RPC method can only contain two parameters, the first one is the generic TRequest and the other is the System.Threading.CancellationToken type.");
         }
 
-        if (method.GetParameters()[1].ParameterType != typeof(CancellationToken))
+        if ( method.GetParameters()[1].ParameterType != typeof(CancellationToken) )
         {
             throw new RpcDefineException("The second parameter of the RPC method must be the System.Threading.CancellationToken type.");
         }

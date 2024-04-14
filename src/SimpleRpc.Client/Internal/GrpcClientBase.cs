@@ -43,4 +43,13 @@ public abstract class GrpcClientBase
 
         return call;
     }
+
+    protected AsyncDuplexStreamingCall<TRequest, TResponse> AsyncDuplexStreamingCall<TRequest, TResponse>(string serviceName, string methodName, CancellationToken token)
+        where TRequest : class
+        where TResponse : class
+    {
+        var call = this._rpcChannel.AsyncDuplexStreamingCall<TRequest, TResponse>(serviceName, methodName, token);
+
+        return call;
+    }
 }
