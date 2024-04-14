@@ -1,4 +1,6 @@
-﻿using System;
+// Copyright (c) JRoger. All Rights Reserved.
+
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,6 +24,7 @@ internal class GrpcHostBuilder : IRpcHostBuilder
     private readonly ISerializer _serializer;
     private readonly RpcServerOptions _options;
     private readonly ILoggerFactory _loggerFactory;
+    private readonly ILogger<GrpcHostBuilder> _logger;
 
     public GrpcHostBuilder(IServiceProvider serviceProvider, ISerializer serializer, IOptions<RpcServerOptions> options, ILoggerFactory loggerFactory)
     {
@@ -30,6 +33,7 @@ internal class GrpcHostBuilder : IRpcHostBuilder
         this._serializer = serializer;
         this._options = options.Value;
         this._loggerFactory = loggerFactory;
+        this._logger = loggerFactory.CreateLogger<GrpcHostBuilder>();
     }
 
     public IRpcHostBuilder AddUnaryMethod<TService, TRequest, TResponse> (
@@ -51,6 +55,9 @@ internal class GrpcHostBuilder : IRpcHostBuilder
                     {
                         baseService.Context = context;
                     }
+
+                    this._logger.LogInformation($"Request gRPC endpoint: {context.Method}");
+
                     return handler(service, request, context.CancellationToken);
                 }
             }
@@ -81,6 +88,9 @@ internal class GrpcHostBuilder : IRpcHostBuilder
                         baseService.Context = context;
                         baseService.SetAsyncStreamReader(requestStream);
                     }
+
+                    this._logger.LogInformation($"Request gRPC endpoint: {context.Method}");
+
                     return handler(service, context.CancellationToken);
                 }
             }
@@ -112,6 +122,8 @@ internal class GrpcHostBuilder : IRpcHostBuilder
                     baseService.Context = context;
                     baseService.SetServerStreamWriter(responseStream);
                 }
+
+                this._logger.LogInformation($"Request gRPC endpoint: {context.Method}");
 
                 return handler(service, request, context.CancellationToken);
             }
