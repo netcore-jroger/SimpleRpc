@@ -49,20 +49,20 @@ public class UserService : RpcServiceBase, IUserService
         };
     }
 
-    public async Task TestServerStreaming(UserDto request, CancellationToken token = default)
+    public async Task TestServerStreaming(UserRequest request, CancellationToken token = default)
     {
         this._logger.LogInformation($"Receive client server streaming message：{JsonSerializer.Serialize(request)}");
 
         var responseStream = this.GetServerStreamWriter<UserDto>();
 
+        // NOTE: do not use method signature: Task WriteAsync(T message, CancellationToken cancellationToken)
         await responseStream.WriteAsync(
             new UserDto
             {
                 Id = (int)DateTime.Now.Ticks / 10000,
                 Name = Guid.NewGuid().ToString("D"),
                 CreateDate = DateTime.Now
-            },
-            token
+            }
         );
 
         await Task.Delay(1000 * 2, token);
@@ -73,8 +73,7 @@ public class UserService : RpcServiceBase, IUserService
                 Id = (int)DateTime.Now.Ticks / 10000,
                 Name = Guid.NewGuid().ToString("D"),
                 CreateDate = DateTime.Now
-            },
-            token
+            }
         );
     }
 }

@@ -16,8 +16,7 @@ internal class GrpcClientTypeBuilder
     private static readonly MethodInfo _clientStreamingMethodToCall = _clientBaseType.GetMethod(nameof(IRpcChannel.AsyncClientStreamingCall), BindingFlags.Instance | BindingFlags.NonPublic);
     private static readonly MethodInfo _serverStreamingMethodToCall = _clientBaseType.GetMethod(nameof(IRpcChannel.AsyncServerStreamingCall), BindingFlags.Instance | BindingFlags.NonPublic);
 
-    public TypeInfo Create<TService>()
-        where TService : class, IRpcService
+    public TypeInfo Create<TService>() where TService : class, IRpcService
     {
         var assemblyName = $"SimpleRpc.ClientProxy_{Guid.NewGuid():N}";
         var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName(assemblyName), AssemblyBuilderAccess.Run);

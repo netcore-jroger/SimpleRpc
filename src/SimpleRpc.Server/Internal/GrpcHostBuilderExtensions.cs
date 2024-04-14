@@ -61,7 +61,7 @@ internal static class GrpcHostBuilderExtensions
                         break;
 
                     case MethodType.ServerStreaming:
-                        // Func<TService, CancellationToken, Task>
+                        // Func<TService, TRequest, CancellationToken, Task>
                         var serverStreamingHandlerGenerator = _serverStreamingHandlerGenerator.MakeGenericMethod(rpcServiceDescription.RpcServiceType, rpcMethodDescription.RequestDataType);
                         var serverStreamingHandler = serverStreamingHandlerGenerator.Invoke(null, new[] { rpcMethodDescription.RpcMethod });
 
